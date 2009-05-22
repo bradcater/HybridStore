@@ -59,13 +59,16 @@ char[] encode(char[][char[]] arr, bool wrap_vals = true)
 {
     char[] json;
     char[] v;
+    char[] v_tmp;
     foreach (key; arr.keys)
     {
-        if (wrap_vals)
+        v_tmp = arr[key];
+        // make sure it's not a JSON object that we're putting in
+        if (wrap_vals && v_tmp.length > 0 && (v_tmp[0..1] != "{" && v_tmp[$-1..$] != "}"))
         {
-            v = format("\"%s\"", arr[key]);
+            v = format("\"%s\"", v_tmp);
         } else {
-            v = arr[key];
+            v = v_tmp;
         }
         json = format("%s,\"%s\":%s", json, key, v);
     }

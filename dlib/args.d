@@ -4,6 +4,7 @@ import dlib.config;
 import dlib.core;
 import dlib.getconfig;
 import dlib.shorttests;
+import dlib.stats;
 import dlib.verbal;
 import std.string;
 
@@ -75,6 +76,15 @@ void process_args(char[][] args)
                 {
                     ushort p = cast(ushort)atoi(val);
                     PORT = p;
+                } catch (Exception e) {
+                    arg_error(c,val);
+                }
+                break;
+            case "query_count":
+                try
+                {
+                    int qc = cast(int)atoi(val);
+                    QUERY_COUNT = qc;
                 } catch (Exception e) {
                     arg_error(c,val);
                 }

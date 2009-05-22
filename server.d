@@ -6,6 +6,7 @@ import dlib.file;
 import dlib.parser;
 import dlib.rbtree;
 import dlib.shorttests;
+import dlib.stats;
 import dlib.verbal;
 import std.c.time;
 import std.conv;
@@ -303,14 +304,15 @@ private char[] _handle_info_all(char[][] servers, RedBlackTree btree, char[] tre
     {
         char[] valid_s = btree.isValid() ? OK : NOT_OK;
         Node n = btree.max();
-        char[] max = (n is null) ? "\"-\"" : n.getData();
+        char[] max = (n is null) ? "-" : n.getData();
         n = btree.min();
-        char[] min = (n is null) ? "\"-\"" : n.getData();
+        char[] min = (n is null) ? "-" : n.getData();
         char[][char[]] json_arr;
         json_arr["status"] = valid_s;
         json_arr["size"] = format("%s", btree.getSize());
         json_arr["max"] = max;
         json_arr["min"] = min;
+        json_arr["common_queries"] = pretty_queries(STATS_COMMON_QUERIES);
         char[][char[]] big_json_arr;
         big_json_arr[SERVER] = dlib.json.encode(json_arr);
         resp = dlib.json.encode(big_json_arr,false)[1..$-1];
@@ -504,6 +506,8 @@ void main(char[][] args)
         say(format("query: \"%s\"", query),VERBOSITY,5);
         if (is_query(query))
         {
+            // maintain the query stats
+            maintain_queries(query);
             int kind = query_kind(query);
             // do the special cases
             switch (kind)

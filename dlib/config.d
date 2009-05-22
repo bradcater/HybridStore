@@ -22,7 +22,7 @@ char[][] SERVER_POOL = ["localhost","localhost:51111","10.0.1.115:51111"];
 int[] SERVER_WEIGHTS = [2,1,1];
 int[] DEAD_SERVERS;
 
-// this is the count of unique servers (since we duplicate them for weighting)
+// the count of unique servers (since we duplicate them for weighting)
 int SERVER_COUNT;
 
 /*
@@ -41,6 +41,9 @@ int MAX_SIZE = 100000;
 
 // the name of the numeric type
 const char[] NUMERIC = "NUMERIC";
+
+// the number of most frequent queries to maintain
+int QUERY_COUNT = 10;
 
 /*
  * DISK
