@@ -47,9 +47,9 @@ private char[] _assemble_data(AttrObj[] aobjs)
     char[] data;
     foreach (ao; aobjs)
     {
-        data = format("%s,%s=%s", data, ao.getAttr("key"), ao.getAttr("value"));
+        data = format("%s=%s,%s", ao.getAttr("key"), ao.getAttr("value"), data);
     }
-    return data[1..$-1];
+    return data[0..$-1];
 }
 
 /*
@@ -78,11 +78,11 @@ private char[] _format_nodes_as_json(Node[] nodes)
     char[] resp;
     foreach (n; nodes)
     {
-        resp = format("%s,%s", resp, node_info(n));
+        resp = format("%s,%s", node_info(n), resp);
     }
     if (resp.length > 0)
     {
-        resp = resp[1..$];
+        resp = resp[0..$-1];
     }
     return format("[%s]", resp);
 }
@@ -224,7 +224,7 @@ private char[] _handle_del_get_set(char[][] servers, RedBlackTree btree, char[] 
                         } else {
                             local_resp = _perform_local_op(btree,kind,key);
                         }
-                        resp = format("%s,%s", resp, local_resp);
+                        resp = format("%s,%s", local_resp, resp);
                     }
                 } else {
                     s_keys_str = array_join(s_keys,",");
@@ -234,7 +234,7 @@ private char[] _handle_del_get_set(char[][] servers, RedBlackTree btree, char[] 
                         char[][char[]] json_sm_resp = dlib.json.decode(sm_resp);
                         if (dlib.json.has_and_is(json_sm_resp,"status",OK) && dlib.json.has_key(json_sm_resp,"response"))
                         {
-                            resp = format("%s,%s", resp, json_sm_resp["response"][1..$-1]);
+                            resp = format("%s,%s", json_sm_resp["response"][1..$-1], resp);
                         }
                     }
                 }
@@ -243,8 +243,8 @@ private char[] _handle_del_get_set(char[][] servers, RedBlackTree btree, char[] 
     }
     if (resp.length > 0)
     {
-        // clear the initial comma
-        resp = resp[1..$];
+        // clear the trailing comma
+        resp = resp[0..$-1];
     }
     if (kind == K.GET)
     {
@@ -370,7 +370,7 @@ private char[] _handle_info_all(char[][] servers, RedBlackTree btree, char[] tre
             {
                 r = r[1..$-2];
             }
-            resp = format("%s,%s", resp, r);
+            resp = format("%s,%s", r, resp);
         }
         resp = format("[%s]", resp);
     } else {
@@ -423,9 +423,9 @@ int respond(char[][] servers, Socket s, char[] input, int kind, RedBlackTree[cha
             {
                 if (n.data is null)
                 {
-                    data = format("%s%%%%\nkey: NUMERIC(%s)\nvalue: %s\n", data, n.idata, n.getValue());
+                    data = format("%%%%\nkey: NUMERIC(%s)\nvalue: %s\n%s", n.idata, n.getValue(), data);
                 } else {
-                    data = format("%s%%%%\nkey: %s\nvalue: %s\n", data, n.data, n.getValue());
+                    data = format("%%%%\nkey: %s\nvalue: %s\n%s", n.data, n.getValue(), data);
                 }
             }
             data = format("%s%%%%", data);

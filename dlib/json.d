@@ -70,9 +70,9 @@ char[] encode(char[][char[]] arr, bool wrap_vals = true)
         } else {
             v = v_tmp;
         }
-        json = format("%s,\"%s\":%s", json, key, v);
+        json = format("\"%s\":%s,%s", key, v, json);
     }
-    return format("{%s}", json[1..$]);
+    return format("{%s}", json[0..$-1]);
 }
 
 /*
