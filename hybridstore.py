@@ -1,3 +1,4 @@
+from cjson import decode
 from pickle import dumps, loads
 import socket
 
@@ -11,12 +12,12 @@ class HybridStore:
     
     def __unicode__(self):
         if self.family == socket.AF_INET:
-            return "inet: %s:%d" % (self.address[0], self.address[1])
+            return u"inet: %s:%d" % (self.address[0], self.address[1])
         else:
-            return "unix: %s" % self.address
+            return u"unix: %s" % self.address
 
     def __is_str__(self,s):
-        assert isinstance(s,str) or isinstance(s,unicode), "Given s (%s) is the wrong type." % str(s)
+        assert isinstance(s,str) or isinstance(s,unicode), u"Given s (%s) is the wrong type." % str(s)
         return s
     
     def _check_filename(self,filename):
@@ -24,26 +25,32 @@ class HybridStore:
         return filename
 
     def _transform_key(self,key):
-        if isinstance(key,int) or isinstance(key,float): return 'NUMERIC(%s)' % key
+        if isinstance(key,int) or isinstance(key,float):
+            key = u'NUMERIC(%s)' % key
         return key
 
     def _check_keys(self,keys):
+        print '*************************keys',keys
         keys2 = self._transform_key(keys)
         if keys2 != keys: return keys2
         if isinstance(keys,str) or isinstance(keys,unicode): return keys
-        assert isinstance(keys,tuple) or isinstance(keys,list), "keys (%s) is the wrong type." % str(keys)
+        assert isinstance(keys,tuple) or isinstance(keys,list), u"keys (%s) is the wrong type." % str(keys)
         if isinstance(keys,tuple):
-            return '%s=%s' % (self._transform_key(keys[0]),keys[1])
+            print u'%s=%s' % (self._transform_key(keys[0]),self._dumps(keys[1]))
+            return u'%s=%s' % (self._transform_key(keys[0]),self._dumps(keys[1]))
         else:
             for i in xrange(len(keys)):
                 k = self._transform_key(k)
-                assert isinstance(k,tuple), "key (%s) is the wrong type." % str(k)
+                assert isinstance(k,tuple), u"key (%s) is the wrong type." % str(k)
                 if len(k) == 2:
-                    k = '%s=%s' % (k[0],dumps(k[1]))
+                    k = u'%s=%s' % (k[0],self._dumps(k[1]))
                 else:
-                    k = '%s' % k[0]
+                    # If for some reason someone wants to pre-serialize and put
+                    # the data in the form key=serialize(value), who am I to say no?
+                    print '*************preserialized'
+                    k = u'%s' % k[0]
                 keys[i] = k
-            return ','.join(keys)
+            return u','.join(keys)
     
     def _check_server(self,server):
         server = self.__is_str__(server)
@@ -52,27 +59,32 @@ class HybridStore:
     def _check_tree(self,tree):
         tree = self.__is_str__(tree)
         return tree
+
+    def _dumps(self,obj):
+        return dumps(obj).replace('\n','\\n')
     
     def _get_socket(self):
-        #s = socket.socket(self.family, socket.SOCK_STREAM)
         s = socket.socket()
         s.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
-        if hasattr(s, 'settimeout'):
+        if hasattr(s, u'settimeout'):
             s.settimeout(self._SOCKET_TIMEOUT)
         try:
             s.connect(self.address)
         except socket.timeout, msg:
-            print "Socket timeout: %s" % msg
+            print u"Socket timeout: %s" % msg
             return None
         except socket.error, msg:
-            print "Socket error: %s" % msg
+            print u"Socket error: %s" % msg
             return None
         return s
 
+    def _loads(self,s):
+        return loads(s)
+
     def _send_cmd(self, cmd):
-        if len(cmd) > 0 and cmd[-1] != ";":
-            cmd = "%s;" % cmd
-        #print 'sending %s' % cmd
+        if len(cmd) > 0 and cmd[-1] != u";":
+            cmd = u"%s;" % cmd
+        #print u'sending %s' % cmd
         s = self._get_socket()
         if s:
             s.send(cmd)
@@ -87,9 +99,9 @@ class HybridStore:
     def commit(self,tree,filename,compressed=False):
         filename = self._check_filename(filename)
         tree = self._check_tree(tree)
-        s = "COMMIT %s TO %s" % (tree,filename)
+        s = u"COMMIT %s TO %s" % (tree,filename)
         if compressed:
-            s = "%s COMPRESSED" % s
+            s = u"%s COMPRESSED" % s
         return self._send_cmd("%s;" % s)
     
     def create(self,tree):
@@ -115,8 +127,20 @@ class HybridStore:
     def get(self,key,tree):
         keys = self._check_keys(key)
         tree = self._check_tree(tree)
-        # TODO: Unserialize here
-        return self._send_cmd("GET %s FROM %s;" % (keys,tree))
+        r = self._send_cmd("GET %s FROM %s;" % (keys,tree))
+        # TODO: It's dumb that we have to decode and then stringify (only to be
+        # decoded again later).
+        print 'response from server',r
+        json = decode(r)
+        if json.get('status') == 'Ok.':
+            d = {}
+            pairs = json.get('response',{})
+            for k,v in pairs.items():
+                print '**************************k,v',k,v
+                d[k] = self._loads(v)
+            json['response'] = d
+            return str(json)
+        return r
 
     def get_r(self,keymin,keymax,tree):
         keymin = self._check_keys(keymin)
@@ -131,15 +155,14 @@ class HybridStore:
     def load(self,filename,tree,compressed=False):
         filename = self._check_filename(filename)
         tree = self._check_tree(tree)
-        s = "LOAD %s FROM %s" % (tree,filename)
+        s = u"LOAD %s FROM %s" % (tree,filename)
         if compressed:
-            s = "%s COMPRESSED"
+            s = u"%s COMPRESSED"
         return self._send_cmd("%s;" % s)
     
     def set(self,key,tree):
         keys = self._check_keys(key)
         tree = self._check_tree(tree)
-        # TODO: Serialize here
         return self._send_cmd("SET %s IN %s;" % (keys,tree))
     
     def swap(self,old_server,new_server):

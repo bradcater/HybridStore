@@ -114,7 +114,7 @@ bool is_get(char[] query)
     // GET mykey FROM mytree;
     if (_is_op_well_formed(query, "GET", 1, "FROM", 3))
     {
-        return _is_legal_get_keyset(split(query," ")[1]);
+        return _is_legal_get_keyset(split(query)[1]);
     }
     return false;
 }
