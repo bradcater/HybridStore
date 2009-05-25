@@ -30,13 +30,11 @@ class HybridStore:
         return key
 
     def _check_keys(self,keys):
-        print '*************************keys',keys
         keys2 = self._transform_key(keys)
         if keys2 != keys: return keys2
         if isinstance(keys,str) or isinstance(keys,unicode): return keys
         assert isinstance(keys,tuple) or isinstance(keys,list), u"keys (%s) is the wrong type." % str(keys)
         if isinstance(keys,tuple):
-            print u'%s=%s' % (self._transform_key(keys[0]),self._dumps(keys[1]))
             return u'%s=%s' % (self._transform_key(keys[0]),self._dumps(keys[1]))
         else:
             for i in xrange(len(keys)):
@@ -47,7 +45,6 @@ class HybridStore:
                 else:
                     # If for some reason someone wants to pre-serialize and put
                     # the data in the form key=serialize(value), who am I to say no?
-                    print '*************preserialized'
                     k = u'%s' % k[0]
                 keys[i] = k
             return u','.join(keys)
@@ -130,13 +127,11 @@ class HybridStore:
         r = self._send_cmd("GET %s FROM %s;" % (keys,tree))
         # TODO: It's dumb that we have to decode and then stringify (only to be
         # decoded again later).
-        print 'response from server',r
         json = decode(r)
         if json.get('status') == 'Ok.':
             d = {}
             pairs = json.get('response',{})
             for k,v in pairs.items():
-                print '**************************k,v',k,v
                 d[k] = self._loads(v)
             json['response'] = d
             return str(json)
