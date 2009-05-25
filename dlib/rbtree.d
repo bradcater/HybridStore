@@ -104,15 +104,23 @@ class RedBlackTree
     }
 
     // return the maximum keyed element in the tree
-    Node max()
+    Node max(Node node = null)
     {
-        return superlative(RIGHT);
+        if (node is null)
+        {
+            node = root;
+        }
+        return superlative_r(node,RIGHT);
     }
     
     // return the minimum keyed element in the tree
-    Node min()
+    Node min(Node node = null)
     {
-        return superlative(LEFT);
+        if (node is null)
+        {
+            node = root;
+        }
+        return superlative_r(node,LEFT);
     }
     
     // search for a key in the tree and return it if found
@@ -280,14 +288,13 @@ class RedBlackTree
         return result;        
     }
 
-    // general superlative
-    Node superlative(int dir)
+    // general recursive superlative
+    Node superlative_r(Node node, int dir)
     {
-        if (root is null)
+        if (node is null)
         {
             return null;
         }
-        Node node = root;
         while (node.link[dir] !is null)
         {
             node = node.link[dir];
@@ -303,7 +310,7 @@ class RedBlackTree
             done = 1;
             size--;
         } else {
-            remove_r_logic(node, data, double.min, done);
+            node = remove_r_logic(node, data, double.min, done);
         }
         return node;
     }
@@ -316,59 +323,66 @@ class RedBlackTree
             done = 1;
             size--;
         } else {
-            remove_r_logic(node, null, idata, done);
+            node = remove_r_logic(node, null, idata, done);
         }
         return node;
     }
     
-    void remove_r_logic(Node node, char[] data, double idata, int done)
+    Node remove_r_logic(Node node, char[] data, double idata, int done)
     {
-        int dir;
-        bool use_data = (data !is null);
-        bool equal = use_data ? (node.data == data) : (node.idata == idata);
-        if (equal) 
+        if (node is null)
         {
-            if (node.link[LEFT] is null || node.link[RIGHT] is null)
+            done = 1;
+        } else {
+            int dir;
+            bool use_data = (data !is null);
+            bool equal = use_data ? (node.data == data) : (node.idata == idata);
+            if (equal) 
             {
-                Node save = node.link[node.link[LEFT] is null];
-                /* Case 0 */
-                if (isRed(node))
+                if (node.link[LEFT] is null || node.link[RIGHT] is null)
                 {
-                    done = 1;
-                } else if (isRed(save)) {
-                    save.red = 0;
-                    done = 1;
+                    Node save = node.link[node.link[LEFT] is null];
+                    /* Case 0 */
+                    if (isRed(node))
+                    {
+                        done = 1;
+                    } else if (isRed(save)) {
+                        save.red = 0;
+                        done = 1;
+                    }
                     delete node;
+                    size--;
                     return save;
-                }
-            } else {
-                Node heir = node.link[LEFT];
-                while (heir.link[RIGHT] !is null)
-                {
-                    heir = heir.link[RIGHT];
-                }
-                if (use_data)
-                {
-                    node.data = heir.data;
-                    data = heir.data;
                 } else {
-                    node.idata = heir.idata;
-                    idata = heir.idata;
+                    Node heir = node.link[LEFT];
+                    while (heir.link[RIGHT] !is null)
+                    {
+                        heir = heir.link[RIGHT];
+                    }
+                    if (use_data)
+                    {
+                        node.data = heir.data;
+                        data = heir.data;
+                    } else {
+                        node.idata = heir.idata;
+                        idata = heir.idata;
+                    }
                 }
             }
+            if (use_data)
+            {
+                dir = node.data < data;
+                node.link[dir] = remove_r(node.link[dir], data, done);
+            } else {
+                dir = node.idata < idata;
+                node.link[dir] = remove_r(node.link[dir], idata, done);
+            }
+            if (!done)
+            {
+                node = remove_balance(node, dir, done);
+            }
         }
-        if (use_data)
-        {
-            dir = node.data < data;
-            node.link[dir] = remove_r(node.link[dir], data, done);
-        } else {
-            dir = node.idata < idata;
-            node.link[dir] = remove_r(node.link[dir], idata, done);
-        }
-        if (!done)
-        {
-            node = remove_balance(node, dir, done);
-        }
+        return node;
     }
 
     // remove and balances the nodes 

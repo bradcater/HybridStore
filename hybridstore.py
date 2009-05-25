@@ -22,15 +22,21 @@ class HybridStore:
     def _check_filename(self,filename):
         filename = self.__is_str__(filename)
         return filename
-    
+
+    def _transform_key(self,key):
+        if isinstance(key,int) or isinstance(key,float): return 'NUMERIC(%s)' % key
+        return key
+
     def _check_keys(self,keys):
+        keys2 = self._transform_key(keys)
+        if keys2 != keys: return keys2
         if isinstance(keys,str) or isinstance(keys,unicode): return keys
         assert isinstance(keys,tuple) or isinstance(keys,list), "keys (%s) is the wrong type." % str(keys)
         if isinstance(keys,tuple):
-            return '%s=%s' % (keys[0],keys[1])
+            return '%s=%s' % (self._transform_key(keys[0]),keys[1])
         else:
             for i in xrange(len(keys)):
-                k = keys[i]
+                k = self._transform_key(k)
                 assert isinstance(k,tuple), "key (%s) is the wrong type." % str(k)
                 if len(k) == 2:
                     k = '%s=%s' % (k[0],dumps(k[1]))

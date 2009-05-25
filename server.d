@@ -352,7 +352,8 @@ private char[] _handle_info_all(char[][] servers, RedBlackTree btree, char[] tre
             }
             resp = format("%s,%s", r, resp);
         }
-        resp = format("[%s]", resp);
+        resp = format("{%s}", resp[0..$-1]);
+        resp = dlib.remote.response_as_json(true,resp,false);
     } else {
         say(INVALID_STATE,VERBOSITY,1);
     }
