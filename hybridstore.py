@@ -91,7 +91,7 @@ class HybridStore:
 
     def all(self,tree):
         self._tree = self._check_tree(tree)
-        return self._send_cmd("ALL FROM %s;" % _tree)
+        return self._send_cmd("ALL FROM %s;" % tree)
     
     def commit(self,tree,filename,compressed=False):
         filename = self._check_filename(filename)

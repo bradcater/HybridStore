@@ -6,7 +6,8 @@ from cjson import decode
 class TestCoreFunctions(unittest.TestCase):
     def __init__(self,*args,**kwargs):
         super(TestCoreFunctions,self).__init__(*args,**kwargs)
-        self._hs = None
+        self._hs = HS()
+        self._all_data = [('tom','male'),('angie','female'),('marshall','male'),('debbie','female'),('orson','male'),('jenny','female')]
         self._basic_data = [('a','1'),('b','2'),('c','3'),('d','4'),('e','5')]
         self._numeric_data = [(1,1),(2,2),(3,3),(4,4),(5,5)]
 
@@ -16,17 +17,19 @@ class TestCoreFunctions(unittest.TestCase):
             print 'Response: %s' % s
             return False
     
+    def _json_ok(self,json):
+        self.assertTrue(json)
+        self.assertEqual(json.get('status'),'Ok.')
+    
     def _to_int(self,i):
         if not isinstance(i,int): i = int(i)
         return i
 
     def setUp(self):
-        self._hs = HS()
         self._hs.create('test')
 
     def tearDown(self):
         self._hs.drop('test')
-        self._hs = None
 
     def _test_of_data(self,lbls,data):
         self.assertEqual(len(lbls),4)
@@ -39,14 +42,12 @@ class TestCoreFunctions(unittest.TestCase):
         for p in data:
             r = self._hs.get(p[0],'test')
             json = self._jd(r)
-            self.assertTrue(json)
-            self.assertEqual(json['status'],'Ok.')
+            self._json_ok(json)
             self.assertEqual(json['response'][p[0]],p[1])
         print 'DOING %ss...' % lbls[2]
         r = self._hs.get_r('b','d','test')
         json = self._jd(r)
-        self.assertTrue(json)
-        self.assertEqual(json['status'],'Ok.')
+        self._json_ok(json)
         for p in self._basic_data:
             if p[0] in ['b','c','d']:
                 self.assertEqual(json['response'][p[0]],p[1])
@@ -61,12 +62,26 @@ class TestCoreFunctions(unittest.TestCase):
             r = self._hs.dell(p[0],'test')
             json = self._jd(r)
             print json
-            self.assertTrue(json)
+            self._json_ok(json)
             r = self._hs.info('test')
             json = self._jd(r)
             print json
+            self._json_ok(json)
             self.assertEqual(self._to_int(json['response']['localhost']['size']),original_size - (i + 1))
 
+    def testAll(self):
+        print 'Doing SETs...'
+        for p in self._all_data:
+            r = self._hs.set(p,'test')
+            json = self._jd(r)
+            self._json_ok(json)
+        print 'Doing ALL...'
+        r = self._hs.all('test')
+        print r
+        json = self._jd(r)
+        self._json_ok(json)
+        print json
+    
     def testBasic(self):
         self._test_of_data(('SET','GET','GET_R','DEL'),self._basic_data)
 
