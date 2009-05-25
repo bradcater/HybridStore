@@ -98,12 +98,7 @@ class RedBlackTree
     {
         if (AUTO_PRUNE && (this.size > MAX_SIZE) && (oldest !is null))
         {
-            if (oldest.data is null)
-            {
-                return remove(oldest.idata);
-            } else {
-                return remove(oldest.data);
-            }
+            (oldest.data is null) ? remove(oldest.idata) : remove(oldest.data);
         }
         return false;
     }
@@ -159,13 +154,12 @@ class RedBlackTree
             {
                 return (n.data >= min_data && n.data <= max_data);
             }
-            ns ~= nodes_r(node,&belongs);
+            ns = nodes_r(node,&belongs);
+            return ns;
         }
         if (node.link[side] !is null)
         {
-            ns ~= search_range(min_data, max_data, node.link[side]);
-        } else {
-            return ns;
+            ns = search_range(min_data, max_data, node.link[side]);
         }
         return ns;
     }
@@ -185,14 +179,12 @@ class RedBlackTree
             {
                 return (n.idata >= min_data && n.idata <= max_data);
             }
-            ns ~= nodes_r(node,&belongs);
+            ns = nodes_r(node,&belongs);
             return ns;
         }
         if (node.link[side] !is null)
         {
-            ns ~= search_range(min_data, max_data, node.link[side]);
-        } else {
-            return ns;
+            ns = search_range(min_data, max_data, node.link[side]);
         }
         return ns;
     }
@@ -262,12 +254,7 @@ class RedBlackTree
         if (leafSrc !is null)
         {
             createCopy(leafSrc.link[LEFT]);
-            if (leafSrc.data is null)
-            {
-                add(leafSrc.idata,leafSrc.getValue());
-            } else {
-                add(leafSrc.data,leafSrc.getValue());
-            }
+            (leafSrc.data is null) ? add(leafSrc.idata,leafSrc.getValue()) : add(leafSrc.data,leafSrc.getValue());
             createCopy(leafSrc.link[RIGHT]);
         }
     }
@@ -461,12 +448,7 @@ class RedBlackTree
         {
             oldest = node;
         }
-        if (data is null)
-        {
-            node.link[dir] = add_r(node.link[dir], idata, value, oldest);
-        } else {
-            node.link[dir] = add_r(node.link[dir], data, value, oldest);
-        }
+        node.link[dir] = (data is null) ? add_r(node.link[dir], idata, value, oldest) : add_r(node.link[dir], data, value, oldest);
         if (isRed(node.link[dir]))
         {
             if (isRed(node.link[!dir]))
@@ -494,48 +476,18 @@ class RedBlackTree
         Node[] nodes;
         if (node !is null)
         {
+            int[2] dirs = [LEFT,RIGHT];
             Node[] tmp;
-            if (node.link[LEFT] !is null)
+            foreach (dir; dirs)
             {
-                if (belongs is null)
+                if (node.link[dir] !is null)
                 {
-                    tmp = nodes_r(node.link[LEFT]);
-                } else {
-                    tmp = nodes_r(node.link[LEFT], belongs);
-                }
-                foreach (t; tmp)
-                {
-                    if (belongs is null)
-                    {
-                        nodes ~= [t];
-                    } else if (belongs(t)) {
-                        nodes ~= [t];
-                    }
+                    nodes ~= (belongs is null) ? nodes_r(node.link[dir]) : nodes_r(node.link[dir],belongs);
                 }
             }
-            if (belongs is null)
+            if ((belongs is null) || belongs(node))
             {
                 nodes ~= [node];
-            } else if (belongs(node)) {
-                nodes ~= [node];
-            }
-            if (node.link[RIGHT] !is null)
-            {
-                if (belongs is null)
-                {
-                    tmp = nodes_r(node.link[RIGHT]);
-                } else {
-                    tmp = nodes_r(node.link[RIGHT], belongs);
-                }
-                foreach (t; tmp)
-                {
-                    if (belongs is null)
-                    {
-                        nodes ~= [t];
-                    } else if (belongs(t)) {
-                        nodes ~= [t];
-                    }
-                }
             }
         }
         return nodes;
@@ -671,12 +623,7 @@ class Node
     }
     char[] getData()
     {
-        if (this.data is null)
-        {
-            return format("%s", this.idata);
-        } else {
-            return this.data;
-        }
+        return (this.data is null) ? format("%s", this.idata) : this.data;
     }
     char[] getValue()
     {

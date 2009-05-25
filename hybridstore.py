@@ -111,6 +111,12 @@ class HybridStore:
         tree = self._check_tree(tree)
         # TODO: Unserialize here
         return self._send_cmd("GET %s FROM %s;" % (keys,tree))
+
+    def get_r(self,keymin,keymax,tree):
+        keymin = self._check_keys(keymin)
+        keymax = self._check_keys(keymax)
+        tree = self._check_tree(tree)
+        return self._send_cmd("GET %s FROM %s RANGE %s;" % (keymin,tree,keymax))
     
     def info(self,tree):
         tree = self._check_tree(tree)
@@ -127,6 +133,7 @@ class HybridStore:
     def set(self,key,tree):
         keys = self._check_keys(key)
         tree = self._check_tree(tree)
+        # TODO: Serialize here
         return self._send_cmd("SET %s IN %s;" % (keys,tree))
     
     def swap(self,old_server,new_server):

@@ -46,10 +46,5 @@ AttrObj[] gatherObjs(char[] f, bool compress)
             }
         }
     }
-    if (objs.length > 1)
-    {
-        return objs[1..objs.length];
-    } else {
-        return objs;
-    }
+    return (objs.length > 1) ? objs[1..$] : objs;
 }

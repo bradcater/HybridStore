@@ -36,7 +36,12 @@ class TestCoreFunctions(unittest.TestCase):
             self.assertTrue(json)
             self.assertEqual(json['status'],'Ok.')
             self.assertEqual(json['response'][p[0]],p[1])
-        print self._hs.info('test')
+        #print self._hs.info('test')
+        print 'DOING GET_Rs...'
+        r = self._hs.get_r('b','d','test')
+        json = self._jd(r)
+        self.assertTrue(json)
+        print json
 
 
 if __name__ == '__main__':

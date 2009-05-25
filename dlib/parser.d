@@ -144,7 +144,8 @@ bool is_get_range_limit(char[] query)
         char[] q = array_join(spl[0..$-2]," ");
         if (is_get_range(format("%s;", q)))
         {
-            try {
+            try
+            {
                 int l = cast(int)atoi(spl[$-1]);
                 return (l > 0);
             } catch (Exception e) {}

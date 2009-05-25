@@ -12,12 +12,7 @@ import std.string;
 
 private int _hash(char[] s, int sofar=0)
 {
-    if (s.length == 0)
-    {
-        return sofar;
-    } else {
-        return _hash(s[1..$], sofar * 11 + s[0]);
-    }
+    return (s.length == 0) ? sofar : _hash(s[1..$], sofar * 11 + s[0]);
 }
 
 char[] choose_server(char[][] servers, char[] key)
@@ -60,12 +55,7 @@ Node[] get_remote_nodes(char[] server, char[] tree_name)
 {
     char[] query = format("ALL FROM %s;", tree_name);
     char[] response = dlib.remote.send_msg(server, query);
-    if (response == NULL)
-    {
-        return null;
-    } else {
-        return nodes_from_response(response);
-    }
+    return (response == NULL) ? null : nodes_from_response(response);
 }
 
 Node[] nodes_from_response(char[] response)
@@ -95,12 +85,7 @@ char[] response_as_json(bool success, char[] response = null, bool wrap_response
     char[] r = format("{\"status\":\"%s\"",success_str);
     if (response)
     {
-        if (wrap_response)
-        {
-            r = format("%s,\"response\":\"%s\"}", r, response);
-        } else {
-            r = format("%s,\"response\":%s}", r, response);
-        }
+        r = (wrap_response) ? format("%s,\"response\":\"%s\"}", r, response) : format("%s,\"response\":%s}", r, response);
     } else {
         r = format("%s}", r);
     }
@@ -119,7 +104,8 @@ char[] send_msg(char[] address, char[] msg)
     } else {
         p = cast(ushort)atoi(spl[1]);
     }
-    try {
+    try
+    {
         s.connect(new InternetAddress(a,p));
         say(format("sending \"%s\" to %s:%s", msg, a, p),VERBOSITY,3);
         s.send(msg);
@@ -142,7 +128,7 @@ char[][] send_msg_all(char[][] servers, char[] exclude, char[] msg)
     {
         if (server != exclude)
         {
-            responses = responses ~ [send_msg(server,msg)];
+            responses ~= [send_msg(server,msg)];
         }
     }
     return responses;

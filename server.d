@@ -12,7 +12,6 @@ import std.c.time;
 import std.conv;
 import std.cstream;
 import std.socket;
-import std.stdio;
 import std.stream;
 import std.string;
 import std.thread;
@@ -78,13 +77,13 @@ private char[] _format_nodes_as_json(Node[] nodes)
     char[] resp;
     foreach (n; nodes)
     {
-        resp = format("%s,%s", node_info(n), resp);
+        resp = format("%s,%s", node_info_short(n), resp);
     }
     if (resp.length > 0)
     {
         resp = resp[0..$-1];
     }
-    return format("[%s]", resp);
+    return format("{%s}", resp);
 }
 
 /*
@@ -97,12 +96,7 @@ private char[] _perform_local_op(RedBlackTree btree, int kind, char[] key, char[
     switch (kind)
     {
         case K.DEL:
-            if (ikey is double.min)
-            {
-                btree.remove(key);
-            } else {
-                btree.remove(ikey);
-            }
+            (ikey is double.min) ? btree.remove(key) : btree.remove(ikey);
             break;
         case K.GET:
             Node n;
@@ -122,12 +116,7 @@ private char[] _perform_local_op(RedBlackTree btree, int kind, char[] key, char[
             resp = node_info_short(n,key,NULL);
             break;
         case K.SET:
-            if (ikey is double.min)
-            {
-                btree.add(key,value);
-            } else {
-                btree.add(ikey,value);
-            }
+            (ikey is double.min) ? btree.add(key,value) : btree.add(ikey,value);
             break;
         default:
             say(INVALID_STATE,VERBOSITY,1);
@@ -177,12 +166,7 @@ RedBlackTree buildRedBlackTrees(char[][] servers, char[] tree_name, char[] f, bo
     {
         key = ao.getAttr("key");
         k = _convert_key(key);
-        if (k == double.min)
-        {
-            btree.add(key,ao.getAttr("value"));
-        } else {
-            btree.add(k,ao.getAttr("value"));
-        }
+        (k == double.min) ? btree.add(key,ao.getAttr("value")) : btree.add(k,ao.getAttr("value"));
     }
     return btree;
 }
@@ -261,16 +245,10 @@ private char[] _handle_get_r_l(char[][] servers, RedBlackTree btree, char[] tree
     char[] server;
     int limit = (kind == K.GET_R ? 0 : cast(int)atoi(p[$-1]));
     char[] key = p[0];
-    char[] max_key = p[2];
+    char[] max_key = p[4];
     double ikey = _convert_key(key);
-    Node[] nodes;
     // get all the local nodes in RANGE first
-    if (ikey is double.min)
-    {
-        nodes = btree.search_range(key,max_key);
-    } else {
-        nodes = btree.search_range(ikey,_convert_key(max_key));
-    }
+    Node[] nodes = (ikey is double.min) ? btree.search_range(key,max_key) : btree.search_range(ikey,_convert_key(max_key));
     // if there aren't enough, then try other servers
     int server_index = 0;
     char[] sm_resp;
@@ -287,11 +265,13 @@ private char[] _handle_get_r_l(char[][] servers, RedBlackTree btree, char[] tree
         }
         server_index++;
     }
-    if (nodes.length == 0)
+    resp = (nodes.length == 0) ? NULL : _format_nodes_as_json(nodes);
+    if (resp)
     {
-        resp = NULL;
-    } else {
-        resp = _format_nodes_as_json(nodes);
+        char[][char[]] arr;
+        arr["status"] = format("\"%s\"", OK);
+        arr["response"] = resp;
+        resp = dlib.json.encode(arr,false);
     }
     return resp;
 }
@@ -421,12 +401,9 @@ int respond(char[][] servers, Socket s, char[] input, int kind, RedBlackTree[cha
             }
             foreach (n; nodes)
             {
-                if (n.data is null)
-                {
-                    data = format("%%%%\nkey: NUMERIC(%s)\nvalue: %s\n%s", n.idata, n.getValue(), data);
-                } else {
-                    data = format("%%%%\nkey: %s\nvalue: %s\n%s", n.data, n.getValue(), data);
-                }
+                data = (n.data is null) ?
+                    format("%%%%\nkey: NUMERIC(%s)\nvalue: %s\n%s", n.idata, n.getValue(), data) :
+                    format("%%%%\nkey: %s\nvalue: %s\n%s", n.data, n.getValue(), data);
             }
             data = format("%s%%%%", data);
             write_file(file_name, data, kind == K.COMMIT_C);
@@ -434,12 +411,7 @@ int respond(char[][] servers, Socket s, char[] input, int kind, RedBlackTree[cha
         }
     } else {
         p = params(input,3);
-        if (kind == K.GET_R || kind == K.GET_R_L)
-        {
-            tree_name = p[2];
-        } else {
-            tree_name = p[$-1];
-        }
+        tree_name = (kind == K.GET_R || kind == K.GET_R_L) ? p[2] : p[$-1];
         if (!(tree_name in *trees))
         {
             resp = dlib.remote.response_as_json(false,INVALID_TREE);
