@@ -1,6 +1,8 @@
 module dlib.attrobj;
 
+import dlib.config;
 import dlib.file;
+import dlib.verbal;
 import std.string;
 
 class AttrObj
@@ -42,7 +44,15 @@ AttrObj[] gatherObjs(char[] f, bool compress)
             string[] s = split(line,":");
             if (s.length == 2)
             {
-                ao.addAttr(strip(s[0]),strip(s[1]));
+                s[0] = strip(s[0]);
+                s[1] = strip(s[1]);
+                if (s[0] == "key") {
+                    if (find(s[1]," ")) {
+                        say(format("Key \"%s\" contains a space(s), but that is not allowed.", s[1]),VERBOSITY,1);
+                        s[1] = replace(s[1]," ","_");
+                    }
+                }
+                ao.addAttr(s[0],s[1]);
             }
         }
     }

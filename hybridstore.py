@@ -1,4 +1,4 @@
-from cjson import decode
+from cjson import DecodeError, decode
 from pickle import dumps, loads
 import socket
 
@@ -60,6 +60,31 @@ class HybridStore:
     def _dumps(self,obj):
         return dumps(obj).replace('\n','\\n')
     
+    def _eval_response(self,r):
+        r = r.replace("NULL.",'"NULL."')
+        try:
+            json = decode(r)
+        except DecodeError:
+            # This is for the case of, e.g.,
+            # {"status":"Ok.","response":{1:"I1\n."}}
+            # where cjson won't let us use 1 as a key.
+            import re
+            p = re.compile('\{(\d+)\:')
+            for m in p.finditer(r):
+                r = r.replace(m.group(0),'{"n%s":' % m.group(1))
+            json = decode(r)
+        if json.get('status') == 'Ok.':
+            d = {}
+            pairs = json.get('response',"NULL.")
+            if pairs != "NULL.":
+                for k,v in pairs.items():
+                    d[self._if_numeric(k)] = self._loads(v)
+            if d.keys():
+                json['response'] = d
+            else:
+                json['response'] = pairs
+            return json
+
     def _get_socket(self):
         s = socket.socket()
         s.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
@@ -75,8 +100,18 @@ class HybridStore:
             return None
         return s
 
+    def _if_numeric(self,k):
+        if k[0] == 'n':
+            try: return int(k[1:])
+            except ValueError: pass
+        return k
+
     def _loads(self,s):
-        return loads(s)
+        #print 's in _loads',s
+        # Unpickle unless this is a dict already.
+        try: return loads(s)
+        # except (ImportError, IndexError, KeyError, TypeError, ValueError):
+        except: return s
 
     def _send_cmd(self, cmd):
         if len(cmd) > 0 and cmd[-1] != u";":
@@ -87,7 +122,7 @@ class HybridStore:
             s.send(cmd)
             resp = s.recv(512)
             s.close()
-            return resp
+            return self._eval_response(resp)
 
     def all(self,tree):
         self._tree = self._check_tree(tree)
@@ -124,18 +159,7 @@ class HybridStore:
     def get(self,key,tree):
         keys = self._check_keys(key)
         tree = self._check_tree(tree)
-        r = self._send_cmd("GET %s FROM %s;" % (keys,tree))
-        # TODO: It's dumb that we have to decode and then stringify (only to be
-        # decoded again later).
-        json = decode(r)
-        if json.get('status') == 'Ok.':
-            d = {}
-            pairs = json.get('response',{})
-            for k,v in pairs.items():
-                d[k] = self._loads(v)
-            json['response'] = d
-            return str(json)
-        return r
+        return self._send_cmd("GET %s FROM %s;" % (keys,tree))
 
     def get_r(self,keymin,keymax,tree):
         keymin = self._check_keys(keymin)

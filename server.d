@@ -348,7 +348,7 @@ private char[] _handle_info_all(char[][] servers, RedBlackTree btree, char[] tre
         {
             if (r.length > 0)
             {
-                r = r[1..$-2];
+                r = r[1..$-1];
             }
             resp = format("%s,%s", r, resp);
         }

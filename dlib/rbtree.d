@@ -6,7 +6,8 @@ module dlib.rbtree;
 
 import dlib.config;
 import dlib.file;
-import std.stdio; 
+import dlib.verbal;
+import std.stdio;
 import std.string;
 static import std.date;
 
@@ -545,7 +546,7 @@ class RedBlackTree
             {
                 if (isRed(ln) || isRed(rn))
                 {
-                    writefln("Red violation.");
+                    say("Red violation.",VERBOSITY,1);
                     return 0;
                 }
             }
@@ -555,13 +556,13 @@ class RedBlackTree
             if ((ln !is null && ln.data !is null && ln.data >= node.data) ||
                 (rn !is null && rn.data !is null && rn.data <= node.data))
             {
-                writefln("Binary tree violation.");
+                say("Binary tree violation.",VERBOSITY,1);
                 return 0;
             }
             /* Black height mismatch */
             if (lh != 0 && rh != 0 && lh != rh)
             {
-                writefln("Black violation.");
+                say("Black violation.",VERBOSITY,1);
                 return 0;
             }
             /* Only count black links */
