@@ -47,8 +47,8 @@ AttrObj[] gatherObjs(char[] f, bool compress)
                 s[0] = strip(s[0]);
                 s[1] = strip(s[1]);
                 if (s[0] == "key") {
-                    if (find(s[1]," ")) {
-                        say(format("Key \"%s\" contains a space(s), but that is not allowed.", s[1]),VERBOSITY,1);
+                    if (find(s[1]," ") > -1) {
+                        say(format("Key \"%s\" contains a space(s) at index %s, but that is not allowed.", s[1], find(s[1]," ")),VERBOSITY,1);
                         s[1] = replace(s[1]," ","_");
                     }
                 }

@@ -3,14 +3,14 @@ import unittest
 from cjson import DecodeError, decode
 
 
-class TestCoreFunctions(unittest.TestCase):
+class HybridStoreTestBase(unittest.TestCase):
     def __init__(self,*args,**kwargs):
-        super(TestCoreFunctions,self).__init__(*args,**kwargs)
+        super(HybridStoreTestBase,self).__init__(*args,**kwargs)
         self._hs = HS()
         self._all_data = [('tom','male'),('angie','female'),('marshall','male'),('debbie','female'),('orson','male'),('jenny','female')]
         self._basic_data = [('a','1'),('b','2'),('c','3'),('d','4'),('e','5')]
         self._numeric_data = [(1,1),(2,2),(3,3),(4,4),(5,5)]
-    
+
     def _assert_get(self,key,val,tree):
         json = self._hs.get(key,tree)
         self._json_ok(json)
@@ -19,16 +19,18 @@ class TestCoreFunctions(unittest.TestCase):
     def _json_ok(self,json):
         self.assertTrue(json)
         self.assertEqual(json.get('status'),'Ok.')
-    
-    def _to_int(self,i):
-        if not isinstance(i,int): i = int(i)
-        return i
 
     def setUp(self):
         self._hs.create('test')
 
     def tearDown(self):
         self._hs.drop('test')
+
+
+class TestCoreFunctions(HybridStoreTestBase):
+    def _to_int(self,i):
+        if not isinstance(i,int): i = int(i)
+        return i
 
     def _test_of_data(self,lbls,data):
         self.assertEqual(len(lbls),4)
@@ -73,8 +75,12 @@ class TestCoreFunctions(unittest.TestCase):
     def testBasic(self):
         self._test_of_data(('SET','GET','GET_R','DEL'),self._basic_data)
 
-    def testLoadUncompressed(self):
-        self._hs.load('dictionary.rj','test')
+    def testNumeric(self):
+        self._test_of_data(('numeric SET','numeric GET','numeric GET_R','numeric DEL'),self._numeric_data)
+
+
+class TestPersistenceFunctions(HybridStoreTestBase):
+    def _from_persistent(self):
         self._assert_get('wolf','Canis lupus','test')
         self._assert_get('earthworm','Lumbricus terrestris','test')
         self._assert_get('honey_bee','Apis mellifera','test')
@@ -87,9 +93,14 @@ class TestCoreFunctions(unittest.TestCase):
         self._assert_get('chalk','calcium carbonate (calcite)','test')
         self._assert_get('salt','sodium chloride','test')
 
-    def testNumeric(self):
-        self._test_of_data(('numeric SET','numeric GET','numeric GET_R','numeric DEL'),self._numeric_data)
-            
+    def testLoadCompressed(self):
+        self._hs.load('dictionary.rjc','test',compressed=True)
+        self._from_persistent()
+
+    def testLoadUncompressed(self):
+        self._hs.load('dictionary.rj','test')
+        self._from_persistent()
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -510,7 +510,7 @@ void main(char[][] args)
                 case K.LOAD, K.LOAD_C:
                     synchronized
                     {
-                        // LOAD mytree FROM myfile;
+                        // LOAD mytree FROM myfile [COMPRESSED];
                         if (MASTER)
                         {
                             char[][] p = params(query,4);

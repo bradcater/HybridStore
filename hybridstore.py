@@ -114,6 +114,7 @@ class HybridStore:
         except: return s
 
     def _send_cmd(self, cmd):
+        #print u'command %s' % cmd
         if len(cmd) > 0 and cmd[-1] != u";":
             cmd = u"%s;" % cmd
         #print u'sending %s' % cmd
@@ -122,6 +123,7 @@ class HybridStore:
             s.send(cmd)
             resp = s.recv(512)
             s.close()
+            #print u'response %s' % resp
             return self._eval_response(resp)
 
     def all(self,tree):
@@ -176,7 +178,7 @@ class HybridStore:
         tree = self._check_tree(tree)
         s = u"LOAD %s FROM %s" % (tree,filename)
         if compressed:
-            s = u"%s COMPRESSED"
+            s = u"%s COMPRESSED" % s
         return self._send_cmd("%s;" % s)
     
     def set(self,key,tree):
