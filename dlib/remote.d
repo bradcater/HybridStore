@@ -63,6 +63,11 @@ Node[] nodes_from_response(char[] response)
     Node[] nodes;
     if (response.length > 2)
     {
+        /*
+         * TODO: I can't get this to fire. When is it called?
+         * It should be used in GET_R in server.d, but it never appears.
+         */
+        writefln(format("nodes_from_response response: %s", response));
         response = response[1..$-2];
         char[][] spl = split(response,"},{");
         char[][] spl_n;
@@ -132,4 +137,12 @@ char[][] send_msg_all(char[][] servers, char[] exclude, char[] msg)
         }
     }
     return responses;
+}
+
+unittest {
+    //Node[] nodes = nodes_from_response("[{\"key1\":\"value1\"},{\"key2\":\"value2\"}]");
+    //writefln(format(nodes));
+    //Node[] nodes_from_response(char[] response)
+    assert(response_as_json(true) == "{\"status\":\"Ok.\"}");
+    assert(response_as_json(false,BAD_QUERY) == "{\"status\":\"Failure.\",\"response\":\"BAD QUERY.\"}");
 }

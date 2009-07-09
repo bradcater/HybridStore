@@ -45,22 +45,22 @@ class TestCore(HybridStoreTestBase):
 
     def _test_of_data(self,lbls,data):
         self.assertEqual(len(lbls),4)
-        print 'Doing %ss...' % lbls[0]
+        #print 'Doing %ss...' % lbls[0]
         for p in data:
             json = self._hs.set(p,'test')
             self.assertTrue(json)
-        print 'Doing %ss...' % lbls[1]
+        #print 'Doing %ss...' % lbls[1]
         for p in data:
             json = self._hs.get(p[0],'test')
             self._json_ok(json)
             self.assertEqual(json['response'][p[0]],p[1])
-        print 'DOING %ss...' % lbls[2]
+        #print 'DOING %ss...' % lbls[2]
         json = self._hs.get_r('b','d','test')
         self._json_ok(json)
         for p in data:
             if p[0] in ['b','c','d']:
                 self.assertEqual(json['response'][p[0]],p[1])
-        print 'DOING %ss...' % lbls[3]
+        #print 'DOING %ss...' % lbls[3]
         json = self._hs.info('test')
         self.assertTrue(json)
         original_size = json['response']['localhost']['size']
@@ -74,11 +74,11 @@ class TestCore(HybridStoreTestBase):
             self.assertEqual(self._to_int(json['response']['localhost']['size']),original_size - (i + 1))
 
     def testAll(self):
-        print 'Doing SETs...'
+        #print 'Doing SETs...'
         for p in self._all_data:
             json = self._hs.set(p,'test')
             self._json_ok(json)
-        print 'Doing ALL...'
+        #print 'Doing ALL...'
         json = self._hs.all('test')
         self._json_ok(json)
         d = json.get('response')

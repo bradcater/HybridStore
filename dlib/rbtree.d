@@ -690,3 +690,12 @@ private char[] _node_info_format(char[] d_lbl, char[] d, char[] v_lbl, char[] v)
 {
     return format("{\"%s\":%s,\"%s\":\"%s\"}", d_lbl, d, v_lbl, v);
 }
+
+unittest {
+    Node n = new Node("mykey","myvalue");
+    assert(node_info(n) == "{\"key\":\"mykey\",\"value\":\"myvalue\"}");
+    assert(node_info_short(n) == "\"mykey\":\"myvalue\"");
+    Node n2 = new Node(7,"myvalue2");
+    assert(node_info(n2) == "{\"key\":7,\"value\":\"myvalue2\"}");
+    assert(node_info_short(n2) == "7:\"myvalue2\"");
+}

@@ -83,3 +83,27 @@ bool is_under(char[] c)
 {
     return (c == "_");
 }
+
+unittest {
+    assert(is_alpha("a"));
+    assert(is_alpha("Z"));
+    assert(!is_alpha("3"));
+    assert(is_comma(","));
+    assert(!is_comma("x"));
+    assert(is_digit("1"));
+    assert(!is_digit("p"));
+    assert(is_dot("."));
+    assert(!is_dot("|"));
+    assert(is_equals("="));
+    assert(!is_equals("*"));
+    assert(is_paren("("));
+    assert(!is_paren("()"));
+    assert(is_pow2(1024));
+    assert(!is_pow2(1026));
+    assert(is_semi(";"));
+    assert(!is_semi(":"));
+    assert(is_space(" "));
+    assert(!is_space("_"));
+    assert(is_under("_"));
+    assert(!is_under("'"));
+}
