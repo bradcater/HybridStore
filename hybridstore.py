@@ -61,6 +61,7 @@ class HybridStore:
         return dumps(obj).replace('\n','\\n')
     
     def _eval_response(self,r):
+        #print '_eval_response r',r
         r = r.replace("NULL.",'"NULL."')
         try:
             json = decode(r)
@@ -76,7 +77,7 @@ class HybridStore:
         if json.get('status') == 'Ok.':
             d = {}
             pairs = json.get('response',"NULL.")
-            if pairs != "NULL.":
+            if not pairs in ["NULL.","PONG."]:
                 for k,v in pairs.items():
                     d[self._if_numeric(k)] = self._loads(v)
             if d.keys():
@@ -181,6 +182,9 @@ class HybridStore:
             s = u"%s COMPRESSED" % s
         return self._send_cmd("%s;" % s)
     
+    def ping(self):
+        return self._send_cmd("PING;")
+
     def set(self,key,tree):
         keys = self._check_keys(key)
         tree = self._check_tree(tree)

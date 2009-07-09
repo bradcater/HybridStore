@@ -3,6 +3,13 @@ import unittest
 from cjson import DecodeError, decode
 
 
+def to_dict(a):
+    # transform, e.g., [('key','value'),...] to {'key':'value'}
+    d = {}
+    for p in a: d[p[0]] = p[1]
+    return d
+
+
 class HybridStoreTestBase(unittest.TestCase):
     def __init__(self,*args,**kwargs):
         super(HybridStoreTestBase,self).__init__(*args,**kwargs)
@@ -74,7 +81,10 @@ class TestCoreFunctions(HybridStoreTestBase):
         print 'Doing ALL...'
         json = self._hs.all('test')
         self._json_ok(json)
-        print json
+        d = json.get('response')
+        existing_d = to_dict(self._all_data)
+        for k,v in d.items():
+            self.assertEqual(v,existing_d.get(k))
     
     def testBasic(self):
         self._test_of_data(('SET','GET','GET_R','DEL'),self._basic_data)
@@ -84,6 +94,11 @@ class TestCoreFunctions(HybridStoreTestBase):
 
 
 class TestErrors(HybridStoreTestBase):
+    def testInvalidLoad(self):
+        json = self._hs.load('not_a_valid_file.rj','test')
+        self._json_error(json)
+        self.assertEqual(json.get('response'),'That is not a valid file.')
+
     def testInvalidTree(self):
         json = self._hs.get('invalid','t')
         self._json_error(json)
@@ -111,6 +126,12 @@ class TestPersistenceFunctions(HybridStoreTestBase):
     def testLoadUncompressed(self):
         self._hs.load('dictionary.rj','test')
         self._from_persistent()
+
+
+class TestSimple(HybridStoreTestBase):
+    def testPing(self):
+        json = self._hs.ping()
+        self.assertEqual(json.get('response'),'PONG.')
 
 
 if __name__ == '__main__':
