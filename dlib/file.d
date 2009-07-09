@@ -1,7 +1,6 @@
 module dlib.file;
 
 import dlib.config;
-import std.stdio;
 import std.stream;
 import std.string;
 static import std.file;
@@ -56,9 +55,16 @@ char[] z_decompress(ubyte[] src)
 private char[] _array_reconcile(ubyte[] array)
 {
     char[] data;
-    for (int i=0; i<array.length; i++)
-    {
-        data ~= [cast(char)array[i]];
+    foreach (ub; array) {
+        data ~= cast(char)ub;
     }
     return data;
+}
+
+unittest {
+    /*
+     * TODO: I still can't explain why these differ in length.
+     */
+    assert(read_file("tests/dictionary.rj",false).length == 35);
+    assert(read_file("tests/dictionary.rjc",true).length == 34);
 }

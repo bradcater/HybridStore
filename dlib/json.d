@@ -87,3 +87,23 @@ bool has_key(char[][char[]] json, char[] key)
 {
     return array_contains(json.keys,key);
 }
+
+unittest {
+    char[] x = "\"pants\"";
+    char[] y = _chop_string(x);
+    assert(y == "pants");
+    assert(_chop_string(y) == y);
+    char[][char[]] a;
+    a["status"] = "Ok.";
+    a["response"] = "{\"key\":\"value\"}";    
+    char[] json = "{\"status\":\"Ok.\",\"response\":{\"key\":\"value\"}}";
+    /*
+     * TODO: This use of format() is a dirty hack!
+     */
+    //writefln(decode(json));
+    //writefln(format(decode(json)));
+    assert(format(decode(json)) == format(a));
+    //writefln(encode(a));
+    assert(encode(a) == json);
+    assert(has_and_is(a,"status","Ok."));
+}

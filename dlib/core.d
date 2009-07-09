@@ -121,3 +121,18 @@ char[][] splitn(char[] str, char[] delim, int n)
     x ~= [y];
     return x;
 }
+
+unittest {
+    assert(array_contains("abcdefg","a"));
+    assert(!array_contains("abcdefg","x"));
+    assert(array_contains(["a","b","c"],"b"));
+    assert(!array_contains(["a","b","c"],"d"));
+    assert(array_contains([1,2,3,4,5],5));
+    assert(!array_contains([1,2,3,4,5],-1));
+    assert(array_join(["abc","def"],"|") == "abc|def");
+    assert(array_remove([1,2,3,4,5],4) == [1,2,3,5]);
+    assert(index_of(["abc","def","ghi"],"def") == 1);
+    assert(md5_hex_digest("superman") == "84D961568A65073A3BCF0EB216B2A576");
+    assert(splitn("a,b,c,d",",",1) == ["a","b,c,d"]);
+    assert(splitn("a,b,c,d",",",2) == ["a","b","c,d"]);
+}
