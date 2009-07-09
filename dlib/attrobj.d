@@ -27,6 +27,13 @@ class AttrObj
             return [];
         }
     }
+    unittest {
+        AttrObj ao = new AttrObj();
+        ao.addAttr("key","mykey");
+        ao.addAttr("value","myvalue");
+        assert(ao.getAttr("key") == "mykey", "AttrObj failed property lookup.");
+        assert(ao.getAttr("value") == "myvalue", "AttrObj failed property lookup.");
+    }
 }
 
 AttrObj[] gatherObjs(char[] f, bool compress)

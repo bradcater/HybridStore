@@ -648,6 +648,13 @@ class Node
     {
         this.cvalue = z_compress(value);
     }
+    unittest {
+        Node n_s = new Node("mydata","myvalue");
+        assert(n_s.getData() == "mydata", "Node failed data lookup.");
+        assert(n_s.getValue() == "myvalue", "Node failed value lookup.");
+        n_s.setValue("mynewvalue");
+        assert(n_s.getValue() == "mynewvalue", "Node failed new value lookup.");
+    }
 }
 
 char[] node_info(Node n, char[] d = null, char[] v = null)

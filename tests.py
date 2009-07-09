@@ -16,6 +16,10 @@ class HybridStoreTestBase(unittest.TestCase):
         self._json_ok(json)
         self.assertEqual(json.get('response',{}).get(key),val)
 
+    def _json_error(self,json):
+        self.assertTrue(json)
+        self.assertEqual(json.get('status'),'Failure.')
+
     def _json_ok(self,json):
         self.assertTrue(json)
         self.assertEqual(json.get('status'),'Ok.')
@@ -77,6 +81,13 @@ class TestCoreFunctions(HybridStoreTestBase):
 
     def testNumeric(self):
         self._test_of_data(('numeric SET','numeric GET','numeric GET_R','numeric DEL'),self._numeric_data)
+
+
+class TestErrors(HybridStoreTestBase):
+    def testInvalidTree(self):
+        json = self._hs.get('invalid','t')
+        self._json_error(json)
+        self.assertEqual(json.get('response'),'That is not a valid tree.')
 
 
 class TestPersistenceFunctions(HybridStoreTestBase):

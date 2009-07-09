@@ -83,7 +83,7 @@ class HybridStore:
                 json['response'] = d
             else:
                 json['response'] = pairs
-            return json
+        return json
 
     def _get_socket(self):
         s = socket.socket()
