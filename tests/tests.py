@@ -38,7 +38,7 @@ class HybridStoreTestBase(unittest.TestCase):
         self._hs.drop('test')
 
 
-class TestCoreFunctions(HybridStoreTestBase):
+class TestCore(HybridStoreTestBase):
     def _to_int(self,i):
         if not isinstance(i,int): i = int(i)
         return i
@@ -82,9 +82,9 @@ class TestCoreFunctions(HybridStoreTestBase):
         json = self._hs.all('test')
         self._json_ok(json)
         d = json.get('response')
-        existing_d = to_dict(self._all_data)
+        data_d = to_dict(self._all_data)
         for k,v in d.items():
-            self.assertEqual(v,existing_d.get(k))
+            self.assertEqual(v,data_d.get(k))
     
     def testBasic(self):
         self._test_of_data(('SET','GET','GET_R','DEL'),self._basic_data)
@@ -94,18 +94,31 @@ class TestCoreFunctions(HybridStoreTestBase):
 
 
 class TestErrors(HybridStoreTestBase):
+    def _invalid(self,name):
+        return 'That is not a valid %s.' % name
+
+    def testBadQuery(self):
+        json = self._hs.send('DO SOMETHING INVALID;')
+        self._json_error(json)
+        self.assertEqual(json.get('response'),'Query seems well-formed, but it is unrecognized.')
+
+    def testDropInvalidTree(self):
+        json = self._hs.drop('t')
+        self._json_error(json)
+        self.assertEqual(json.get('response'),self._invalid('tree'))
+
+    def testGetInvalidTree(self):
+        json = self._hs.get('invalid','t')
+        self._json_error(json)
+        self.assertEqual(json.get('response'),self._invalid('tree'))
+
     def testInvalidLoad(self):
         json = self._hs.load('not_a_valid_file.rj','test')
         self._json_error(json)
-        self.assertEqual(json.get('response'),'That is not a valid file.')
-
-    def testInvalidTree(self):
-        json = self._hs.get('invalid','t')
-        self._json_error(json)
-        self.assertEqual(json.get('response'),'That is not a valid tree.')
+        self.assertEqual(json.get('response'),self._invalid('file'))
 
 
-class TestPersistenceFunctions(HybridStoreTestBase):
+class TestPersistence(HybridStoreTestBase):
     def _from_persistent(self):
         self._assert_get('wolf','Canis lupus','test')
         self._assert_get('earthworm','Lumbricus terrestris','test')
@@ -120,12 +133,31 @@ class TestPersistenceFunctions(HybridStoreTestBase):
         self._assert_get('salt','sodium chloride','test')
 
     def testLoadCompressed(self):
-        self._hs.load('dictionary.rjc','test',compressed=True)
+        self._hs.load('tests/dictionary.rjc','test',compressed=True)
         self._from_persistent()
 
     def testLoadUncompressed(self):
-        self._hs.load('dictionary.rj','test')
+        self._hs.load('tests/dictionary.rj','test')
         self._from_persistent()
+
+
+class TestRange(HybridStoreTestBase):
+    def _load_basic(self):
+        self._hs.set(','.join([ "%s=%s" % (p[0],p[1]) for p in self._basic_data ]),'test')
+
+    def testLimit(self):
+        self._load_basic()
+        json = self._hs.get_r('a','e','test',limit=2)
+        self._json_ok(json)
+        self.assertTrue(isinstance(json.get('response'),dict))
+        self.assertEqual(len(json['response'].keys()),2)
+
+    def testNoLimit(self):
+        self._load_basic()
+        json = self._hs.get_r('a','d','test')
+        self._json_ok(json)
+        self.assertTrue(isinstance(json.get('response'),dict))
+        self.assertEqual(len(json['response'].keys()),4)
 
 
 class TestSimple(HybridStoreTestBase):

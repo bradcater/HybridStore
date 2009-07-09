@@ -265,6 +265,9 @@ private char[] _handle_get_r_l(char[][] servers, RedBlackTree btree, char[] tree
         }
         server_index++;
     }
+    if (limit > 0 && nodes.length > limit) {
+        nodes = nodes[0..limit];
+    }
     resp = (nodes.length == 0) ? NULL : _format_nodes_as_json(nodes);
     if (resp)
     {

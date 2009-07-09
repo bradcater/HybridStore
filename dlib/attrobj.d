@@ -65,3 +65,10 @@ AttrObj[] gatherObjs(char[] f, bool compress)
     }
     return (objs.length > 1) ? objs[1..$] : objs;
 }
+
+unittest {
+    AttrObj[] aobjs = gatherObjs("tests/dictionary.rj", false);
+    assert(aobjs.length == 11);
+    AttrObj[] aobjs_c = gatherObjs("tests/dictionary.rjc", true);
+    assert(aobjs_c.length == 11);
+}

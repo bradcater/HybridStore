@@ -283,3 +283,25 @@ private bool _is_op_well_formed(char[] query, char[] kind, int index, char[] goa
     }
     return false;
 }
+
+unittest {
+    assert(query_kind("PING;") == K.PING);
+    assert(query_kind("CREATE TREE t;") == K.CREATE);
+    assert(query_kind("LOAD t FROM myfile.rj;") == K.LOAD);
+    assert(query_kind("LOAD t FROM myfile.rjc COMPRESSED;") == K.LOAD_C);
+    assert(query_kind("SET a=0 IN t;") == K.SET);
+    assert(query_kind("SET a=0,b=1 IN t;") == K.SET);
+    assert(query_kind("GET a FROM t;") == K.GET);
+    assert(query_kind("GET a,b FROM t;") == K.GET);
+    assert(query_kind("GET a FROM t RANGE c;") == K.GET_R);
+    assert(query_kind("GET a FROM t RANGE c LIMIT 2;") == K.GET_R_L);
+    assert(query_kind("DEL a FROM t;") == K.DEL);
+    assert(query_kind("ALL FROM t;") == K.ALL);
+    assert(query_kind("COMMIT t TO myfile.rj;") == K.COMMIT);
+    assert(query_kind("COMMIT t TO myfile.rjc COMPRESSED;") == K.COMMIT_C);
+    assert(query_kind("EXIT;") == K.EXIT);
+    assert(query_kind("DROP TREE t;") == K.DROP);
+    assert(query_kind("SWAP SERVER server1 server2;") == K.SWAP);
+    assert(query_kind("ELECT SERVER server1;") == K.ELECT);
+    assert(query_kind("SOME RANDOM QUERY;") == K.OTHER);
+}

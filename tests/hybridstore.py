@@ -77,7 +77,8 @@ class HybridStore:
         if json.get('status') == 'Ok.':
             d = {}
             pairs = json.get('response',"NULL.")
-            if not pairs in ["NULL.","PONG."]:
+            #if not pairs in ["NULL.","PONG."]:
+            if isinstance(pairs,dict):
                 for k,v in pairs.items():
                     d[self._if_numeric(k)] = self._loads(v)
             if d.keys():
@@ -164,11 +165,15 @@ class HybridStore:
         tree = self._check_tree(tree)
         return self._send_cmd("GET %s FROM %s;" % (keys,tree))
 
-    def get_r(self,keymin,keymax,tree):
+    def get_r(self,keymin,keymax,tree,limit=None):
         keymin = self._check_keys(keymin)
         keymax = self._check_keys(keymax)
         tree = self._check_tree(tree)
-        return self._send_cmd("GET %s FROM %s RANGE %s;" % (keymin,tree,keymax))
+        c = "GET %s FROM %s RANGE %s" % (keymin,tree,keymax)
+        if limit:
+            assert isinstance(limit,int), u"Limit must be an int."
+            c = "%s LIMIT %d" % (c,limit)
+        return self._send_cmd("%s;" % c)
     
     def info(self,tree):
         tree = self._check_tree(tree)
@@ -184,6 +189,10 @@ class HybridStore:
     
     def ping(self):
         return self._send_cmd("PING;")
+
+    def send(self,cmd):
+        # This will send the given command, but its use is not advised.
+        return self._send_cmd(cmd)
 
     def set(self,key,tree):
         keys = self._check_keys(key)

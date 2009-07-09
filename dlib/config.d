@@ -123,3 +123,14 @@ int set_numeric_range(char[] val, char[] name, int dephault)
         return dephault;
     }
 }
+
+unittest {
+    assert(BUFFER_SIZE > 0,"BUFFER_SIZE must be positive.");
+    assert(PORT > 0,"PORT must be positive.");
+    assert(COMPRESSION_LEVEL > 0 && COMPRESSION_LEVEL < 10,"COMPRESSION_LEVEL must be positive and less than 10.");
+    assert(MAX_SIZE > 0,"MAX_SIZE must be positive.");
+    assert(QUERY_COUNT >= 0,"QUERY_COUNT must be non-negative.");
+    assert(VERBOSITY >= 0 && VERBOSITY < 10,"VERBOSITY must be non-negative and less than 10.");
+    assert(numeric_range("5"));
+    assert(!numeric_range("apple"));
+}
