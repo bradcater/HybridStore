@@ -47,7 +47,7 @@ bool AUTO_PRUNE = true;
 int COMPRESSION_LEVEL = 9;
 
 // the maximum number of tree nodes before auto_pruning
-int MAX_SIZE = 100000;
+int MAX_SIZE = 1000000;
 
 // the name of the numeric type
 const char[] NUMERIC = "NUMERIC";

@@ -15,7 +15,7 @@ def socket_send(msg,p):
     s.close()
     return resp
 
-TRIALS = 500000
+TRIALS = 250000
 METHODS = ('hybridstore','memcached','tokyocabinet','mysql')
 METHOD = METHODS[0]
 b = 30
@@ -23,9 +23,9 @@ b = 30
 start = time.time()
 
 if METHOD == 'hybridstore':
-    #msg = "CREATE TREE test;"
-    #socket_send(msg,PORT)
-    for i in xrange(0+TRIALS,TRIALS*2-1,b):
+    msg = "CREATE TREE test;"
+    socket_send(msg,PORT)
+    for i in xrange(0,TRIALS,b):
         msg = "SET %s IN test;" % ",".join([ "%d=%d" % (j,j) for j in xrange(i,i+b) ])
         #msg = "GET %s FROM test;" % ",".join([ "%d" % j for j in xrange(i,i+b) ])
         #msg = "GET %d FROM test RANGE %d;" % (i,i+b)

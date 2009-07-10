@@ -43,21 +43,6 @@ bool array_contains(int[] arr, int elm)
     return false;
 }
 
-char[] array_join(char[][] arr, char[] sep)
-{
-    if (arr.length > 0)
-    {
-        char[] j = arr[0];
-        for (int i=1; i<arr.length; i++)
-        {
-            j ~= format("%s%s", sep, arr[i]);
-        }
-        return j;
-    } else {
-        return "";
-    }
-}
-
 int[] array_remove(int[] arr, int elm)
 {
     for (int i=0; i<arr.length; i++)
@@ -129,7 +114,6 @@ unittest {
     assert(!array_contains(["a","b","c"],"d"));
     assert(array_contains([1,2,3,4,5],5));
     assert(!array_contains([1,2,3,4,5],-1));
-    assert(array_join(["abc","def"],"|") == "abc|def");
     assert(array_remove([1,2,3,4,5],4) == [1,2,3,5]);
     assert(index_of(["abc","def","ghi"],"def") == 1);
     assert(md5_hex_digest("superman") == "84D961568A65073A3BCF0EB216B2A576");

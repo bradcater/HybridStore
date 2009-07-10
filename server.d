@@ -182,10 +182,8 @@ private char[] _handle_del_get_set(char[][] servers, RedBlackTree btree, char[] 
     char[] preposition = (kind == K.SET) ? "IN" : "FROM";
     char[][] keys = split(p[0],",");
     string[][char[]] agg = _aggregate_keys(servers,keys);
-    char[] resp;
-    char[] sm_resp;
+    char[] resp, sm_resp, s_keys_str;
     char[][] s_keys;
-    char[] s_keys_str;
     int server_index;
     foreach (server; agg.keys)
     {
@@ -215,7 +213,7 @@ private char[] _handle_del_get_set(char[][] servers, RedBlackTree btree, char[] 
                         resp = format("%s,%s", local_resp, resp);
                     }
                 } else {
-                    s_keys_str = array_join(s_keys,",");
+                    s_keys_str = join(s_keys,",");
                     sm_resp = dlib.remote.send_msg(server,format("%s %s %s %s;", command, s_keys_str, preposition, tree_name));
                     if (sm_resp !is null)
                     {
@@ -459,7 +457,7 @@ private int _respond_to_normal_query(char[][] servers, Socket a, char[] input, i
                         // on a seperate thread and avoid I/O problems
                         int f()
                         {
-                            char[] action_resp = _handle_del_get_set(servers,btree,tree_name,input,kind,p);
+                            _handle_del_get_set(servers,btree,tree_name,input,kind,p);
                             return 0;
                         }
                         Thread action_thread = new Thread(&f);
@@ -526,8 +524,14 @@ private RedBlackTree[char[]] _response_handler(Socket a, char[] query, int kind,
             dlib.remote.close_if_alive(a);
             break;
         case K.PING:
-            a.send(dlib.remote.response_as_json(true,PONG));
-            dlib.remote.close_if_alive(a);
+            int f_ping()
+            {
+                a.send(dlib.remote.response_as_json(true,PONG));
+                dlib.remote.close_if_alive(a);
+                return 0;
+            }
+            Thread response_thread = new Thread(&f_ping);
+            response_thread.run();
             break;
         case K.DROP:
             synchronized

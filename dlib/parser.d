@@ -163,7 +163,7 @@ bool is_get_range_limit(char[] query)
     if (_is_op_well_formed(query, "GET", 1, "FROM", 7, 3, "RANGE", 7, 5, "LIMIT", 7))
     {
         char[][] spl = split(query);
-        char[] q = array_join(spl[0..$-2]," ");
+        char[] q = join(spl[0..$-2]," ");
         if (is_get_range(format("%s;", q)))
         {
             try
