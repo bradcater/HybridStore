@@ -368,7 +368,7 @@ private char[] _handle_info_all(char[][] servers, RedBlackTree btree, char[] tre
  * If you are MASTER, then you get to decide to do the query or to pass it to another
  * server. All others must do the query.
  */
-int respond(char[][] servers, Socket s, char[] input, int kind, RedBlackTree[char[]]* trees)
+private int _respond_to_normal_query(char[][] servers, Socket s, char[] input, int kind, RedBlackTree[char[]]* trees)
 {
     char[] resp;
     char[][] p;
@@ -460,6 +460,118 @@ int respond(char[][] servers, Socket s, char[] input, int kind, RedBlackTree[cha
     return 0;
 }
 
+private RedBlackTree[char[]] _response_handler(Socket a, char[] query, int kind, RedBlackTree[char[]] trees)
+{
+    // do the special cases
+    switch (kind)
+    {
+        case K.CREATE:
+            synchronized
+            {
+                if (MASTER)
+                {
+                    char[][] responses = dlib.remote.send_msg_all(SERVER_POOL,SERVER,query);
+                }
+                char[][] p = params(query,6);
+                char[] tree_name = p[1];
+                trees[tree_name] = new RedBlackTree();
+                a.send(dlib.remote.response_as_json(true));
+            }
+            break;
+        case K.LOAD, K.LOAD_C:
+            synchronized
+            {
+                // LOAD mytree FROM myfile [COMPRESSED];
+                if (MASTER)
+                {
+                    char[][] p = params(query,4);
+                    char[] file_name = p[2];
+                    if (std.file.exists(file_name))
+                    {
+                        char[] tree_name = p[0];
+                        RedBlackTree t = buildRedBlackTrees(SERVER_POOL, tree_name, file_name, kind == K.LOAD_C);
+                        trees[tree_name] = t;
+                        a.send(dlib.remote.response_as_json(true));
+                    } else {
+                        a.send(dlib.remote.response_as_json(false,INVALID_FILE));
+                    }
+                }
+            }
+            break;
+        case K.PING:
+            a.send(dlib.remote.response_as_json(true,PONG));
+            break;
+        case K.DROP:
+            synchronized
+            {
+                // DROP TREE mytree;
+                if (MASTER)
+                {
+                    char[][] responses = dlib.remote.send_msg_all(SERVER_POOL,SERVER,query);
+                }
+                char[][] p = params(query,4);
+                char[] tree_name = p[1];
+                if (tree_name in trees)
+                {
+                    trees.remove(tree_name);
+                    a.send(dlib.remote.response_as_json(true));
+                } else {
+                    a.send(dlib.remote.response_as_json(false,INVALID_TREE));
+                }
+            }
+            break;
+        case K.SWAP:
+            // SWAP SERVER myoldserver mynewserver;
+            if (MASTER)
+            {
+                char[][] responses = dlib.remote.send_msg_all(SERVER_POOL,SERVER,query);
+            }
+            char[][] p = params(query,4);
+            int index = index_of(SERVER_POOL,p[1]);
+            SERVER_POOL[index] = p[2];
+            DEAD_SERVERS = array_remove(DEAD_SERVERS,index);
+            a.send(dlib.remote.response_as_json(true));
+            break;
+        case K.ELECT:
+            // ELECT SERVER newmaster;
+            char[][] p = params(query,5);
+            char[] server = p[1];
+            // if we're the old master, tell the new master to promote itself
+            if (MASTER)
+            {
+                dlib.remote.send_msg(server,query);
+            }
+            // set master status
+            MASTER = (SERVER == server);
+            // if we're the new master, tell the slaves
+            if (MASTER)
+            {
+                dlib.remote.send_msg_all(SERVER_POOL,SERVER,query);
+            }
+            a.send(dlib.remote.response_as_json(true));
+            break;
+        // do the normal queries
+        case K.DEL, K.GET, K.GET_R, K.GET_R_L, K.SET, K.COMMIT, K.COMMIT_C, K.INFO, K.ALL:
+            int f()
+            {
+                return _respond_to_normal_query(SERVER_POOL,a,query,kind,&trees);
+            }
+            Thread response_thread = new Thread(&f);
+            response_thread.run();
+            break;
+        // do the error queries
+        case K.E_DEL_GET_KEYS:
+            a.send(dlib.remote.response_as_json(false,BAD_QUERY_E_DEL_GET_KEYS));
+            break;
+        case K.E_SET_PAIRS:
+            a.send(dlib.remote.response_as_json(false,BAD_QUERY_E_SET_PAIRS));
+            break;
+        default:
+            a.send(dlib.remote.response_as_json(false,UNRECOGNIZED));
+    }
+    return trees;
+}
+
 void main(char[][] args)
 {
     say(WELCOME,VERBOSITY,1);
@@ -485,121 +597,16 @@ void main(char[][] args)
             // maintain the query stats
             maintain_queries(query);
             int kind = query_kind(query);
-            // do the special cases
-            switch (kind)
-            {
-                case K.EXIT:
-                    // kill all other servers first
-                    if (MASTER)
-                    {
-                        char[][] responses = dlib.remote.send_msg_all(SERVER_POOL,SERVER,query);
-                    }
-                    go = false;
-                    a.send(dlib.remote.response_as_json(true));
-                    break;
-                case K.CREATE:
-                    synchronized
-                    {
-                        if (MASTER)
-                        {
-                            char[][] responses = dlib.remote.send_msg_all(SERVER_POOL,SERVER,query);
-                        }
-                        char[][] p = params(query,6);
-                        char[] tree_name = p[1];
-                        trees[tree_name] = new RedBlackTree();
-                        a.send(dlib.remote.response_as_json(true));
-                    }
-                    break;
-                case K.LOAD, K.LOAD_C:
-                    synchronized
-                    {
-                        // LOAD mytree FROM myfile [COMPRESSED];
-                        if (MASTER)
-                        {
-                            char[][] p = params(query,4);
-                            char[] file_name = p[2];
-                            if (std.file.exists(file_name))
-                            {
-                                char[] tree_name = p[0];
-                                RedBlackTree t = buildRedBlackTrees(SERVER_POOL, tree_name, file_name, kind == K.LOAD_C);
-                                trees[tree_name] = t;
-                                a.send(dlib.remote.response_as_json(true));
-                            } else {
-                                a.send(dlib.remote.response_as_json(false,INVALID_FILE));
-                            }
-                        }
-                    }
-                    break;
-                case K.PING:
-                    a.send(dlib.remote.response_as_json(true,PONG));
-                    break;
-                case K.DROP:
-                    synchronized
-                    {
-                        // DROP TREE mytree;
-                        if (MASTER)
-                        {
-                            char[][] responses = dlib.remote.send_msg_all(SERVER_POOL,SERVER,query);
-                        }
-                        char[][] p = params(query,4);
-                        char[] tree_name = p[1];
-                        if (tree_name in trees)
-                        {
-                            trees.remove(tree_name);
-                            a.send(dlib.remote.response_as_json(true));
-                        } else {
-                            a.send(dlib.remote.response_as_json(false,INVALID_TREE));
-                        }
-                    }
-                    break;
-                case K.SWAP:
-                    // SWAP SERVER myoldserver mynewserver;
-                    if (MASTER)
-                    {
-                        char[][] responses = dlib.remote.send_msg_all(SERVER_POOL,SERVER,query);
-                    }
-                    char[][] p = params(query,4);
-                    int index = index_of(SERVER_POOL,p[1]);
-                    SERVER_POOL[index] = p[2];
-                    DEAD_SERVERS = array_remove(DEAD_SERVERS,index);
-                    a.send(dlib.remote.response_as_json(true));
-                    break;
-                case K.ELECT:
-                    // ELECT SERVER newmaster;
-                    char[][] p = params(query,5);
-                    char[] server = p[1];
-                    // if we're the old master, tell the new master to promote itself
-                    if (MASTER)
-                    {
-                        dlib.remote.send_msg(server,query);
-                    }
-                    // set master status
-                    MASTER = (SERVER == server);
-                    // if we're the new master, tell the slaves
-                    if (MASTER)
-                    {
-                        dlib.remote.send_msg_all(SERVER_POOL,SERVER,query);
-                    }
-                    a.send(dlib.remote.response_as_json(true));
-                    break;
-                // do the normal queries
-                case K.DEL, K.GET, K.GET_R, K.GET_R_L, K.SET, K.COMMIT, K.COMMIT_C, K.INFO, K.ALL:
-                    int f()
-                    {
-                        return respond(SERVER_POOL,a,query,kind,&trees);
-                    }
-                    Thread response_thread = new Thread(&f);
-                    response_thread.run();
-                    break;
-                // do the error queries
-                case K.E_DEL_GET_KEYS:
-                    a.send(dlib.remote.response_as_json(false,BAD_QUERY_E_DEL_GET_KEYS));
-                    break;
-                case K.E_SET_PAIRS:
-                    a.send(dlib.remote.response_as_json(false,BAD_QUERY_E_SET_PAIRS));
-                    break;
-                default:
-                    a.send(dlib.remote.response_as_json(false,UNRECOGNIZED));
+            if (kind == K.EXIT) {
+                // kill all other servers first
+                if (MASTER)
+                {
+                    char[][] responses = dlib.remote.send_msg_all(SERVER_POOL,SERVER,query);
+                }
+                go = false;
+                a.send(dlib.remote.response_as_json(true));
+            } else {
+                trees = _response_handler(a,query,kind,trees);
             }
         } else {
             a.send(dlib.remote.response_as_json(false,BAD_QUERY));
