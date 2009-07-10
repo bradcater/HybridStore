@@ -62,6 +62,9 @@ int VERBOSITY = 9;
 // the bad query message
 const char[] BAD_QUERY = "BAD QUERY.";
 
+// the bad query E_SET_PAIRS message
+const char[] BAD_QUERY_E_SET_PAIRS = "The given key->value pairs are invalid.";
+
 // the failure message
 const char[] FAIL = "Failure.";
 

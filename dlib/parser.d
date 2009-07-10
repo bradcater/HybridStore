@@ -20,6 +20,7 @@ import std.string;
 
 enum K
 {
+    // valid queries
     PING,
     CREATE,
     LOAD,
@@ -37,6 +38,8 @@ enum K
     DROP,
     SWAP,
     ELECT,
+    // invalid queries
+    E_SET_PAIRS,
     OTHER
 }
 
@@ -49,8 +52,7 @@ int query_kind(char[] query)
 {
     if (is_ping(query)) {
         return K.PING;
-    } else if (is_create(query))
-    {
+    } else if (is_create(query)) {
         return K.CREATE;
     } else if (is_load(query)) {
         return K.LOAD;
@@ -82,6 +84,8 @@ int query_kind(char[] query)
         return K.ELECT;
     } else if (is_exit(query)) {
         return K.EXIT;
+    } else if (is_e_set_pairs(query)) {
+        return K.E_SET_PAIRS;
     } else {
         return K.OTHER;
     }
@@ -160,10 +164,34 @@ bool is_info(char[] query)
     return _is_op_well_formed(query, "INFO", 0, "FROM", 2);
 }
 
+private bool _is_set_well_formed(char[] query)
+{
+    return _is_op_well_formed(query, "SET", 1, "IN", 3);
+}
+
+private bool _is_set_pairs_well_formed(char[] query)
+{
+    char[][] kv_pairs = split(split(query)[1],",");
+    foreach (p; kv_pairs) {
+        if (split(p,"=").length != 2) {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool is_set(char[] query)
 {
-    // SET mykey myvalue IN mytree;
-    return _is_op_well_formed(query, "SET", 1, "IN", 3);
+    // SET mykey=myvalue,[mykey2=myvalue2,...] IN mytree;
+    return (_is_set_well_formed(query) &&
+            _is_set_pairs_well_formed(query));
+}
+
+bool is_e_set_pairs(char[] query)
+{
+    // SET mykey=myvalue,mykey2myvalue2,... IN mytree;
+    return (_is_set_well_formed(query) &&
+            !_is_set_pairs_well_formed(query));
 }
 
 /*

@@ -591,6 +591,10 @@ void main(char[][] args)
                     Thread response_thread = new Thread(&f);
                     response_thread.run();
                     break;
+                // do the error queries
+                case K.E_SET_PAIRS:
+                    a.send(dlib.remote.response_as_json(false,BAD_QUERY_E_SET_PAIRS));
+                    break;
                 default:
                     a.send(dlib.remote.response_as_json(false,UNRECOGNIZED));
             }
