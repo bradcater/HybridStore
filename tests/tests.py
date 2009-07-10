@@ -102,21 +102,29 @@ class TestErrors(HybridStoreTestBase):
         self._json_error(json)
         self.assertEqual(json.get('response'),'Query seems well-formed, but it is unrecognized.')
 
-    def testBadQueryEGetKeys(self):
+    def testBadQueryEDelGetKeys(self):
+        r = 'The given key(s) is invalid.'
+        json = self._hs.send('DEL dog=canine FROM test;')
+        self._json_error(json)
+        self.assertEqual(json.get('response'),r)
+        json = self._hs.send('DEL a,sunflower=tasty FROM test;')
+        self._json_error(json)
+        self.assertEqual(json.get('response'),r)
         json = self._hs.send('GET a=0 FROM test;')
         self._json_error(json)
-        self.assertEqual(json.get('response'),'The given key(s) is invalid.')
+        self.assertEqual(json.get('response'),r)
         json = self._hs.send('GET a,b=1 FROM test;')
         self._json_error(json)
-        self.assertEqual(json.get('response'),'The given key(s) is invalid.')
+        self.assertEqual(json.get('response'),r)
 
     def testBadQueryESetPairs(self):
+        r = 'The given key->value pair(s) is invalid.'
         json = self._hs.send('SET a0 IN test;')
         self._json_error(json)
-        self.assertEqual(json.get('response'),'The given key->value pair(s) is invalid.')
+        self.assertEqual(json.get('response'),r)
         json = self._hs.send('SET a=0,b1 IN test;')
         self._json_error(json)
-        self.assertEqual(json.get('response'),'The given key->value pair(s) is invalid.')
+        self.assertEqual(json.get('response'),r)
 
     def testDropInvalidTree(self):
         json = self._hs.drop('t')

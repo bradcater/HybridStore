@@ -63,7 +63,7 @@ int VERBOSITY = 9;
 const char[] BAD_QUERY = "BAD QUERY.";
 
 // the bad query E_GET_KEYS message
-const char[] BAD_QUERY_E_GET_KEYS = "The given key(s) is invalid.";
+const char[] BAD_QUERY_E_DEL_GET_KEYS = "The given key(s) is invalid.";
 
 // the bad query E_SET_PAIRS message
 const char[] BAD_QUERY_E_SET_PAIRS = "The given key->value pair(s) is invalid.";

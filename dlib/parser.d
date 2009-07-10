@@ -39,7 +39,7 @@ enum K
     SWAP,
     ELECT,
     // invalid queries
-    E_GET_KEYS,
+    E_DEL_GET_KEYS,
     E_SET_PAIRS,
     OTHER
 }
@@ -85,8 +85,10 @@ int query_kind(char[] query)
         return K.ELECT;
     } else if (is_exit(query)) {
         return K.EXIT;
+    } else if (is_e_del_keys(query)) {
+        return K.E_DEL_GET_KEYS;
     } else if (is_e_get_keys(query)) {
-        return K.E_GET_KEYS;
+        return K.E_DEL_GET_KEYS;
     } else if (is_e_set_pairs(query)) {
         return K.E_SET_PAIRS;
     } else {
@@ -113,8 +115,15 @@ bool is_create(char[] query)
 bool is_del(char[] query)
 {
     // DEL mykey FROM mytree;
-    return (_is_op_well_formed(query, "DEL", 1, "FROM", 3) &&
+    return (_is_del_well_formed(query) &&
             _is_legal_get_keyset(split(query)[1]));
+}
+
+bool is_e_del_keys(char[] query)
+{
+    // DEL my=key FROM mytree;
+    return (_is_del_well_formed(query) &&
+            !_is_legal_get_keyset(split(query)[1]));
 }
 
 bool is_get(char[] query)
@@ -275,6 +284,11 @@ private bool _is_legal_get_keyset(char[] keyset)
 private bool _is_legal_key(char[] key)
 {
     return !array_contains(key,"=");
+}
+
+private bool _is_del_well_formed(char[] query)
+{
+    return _is_op_well_formed(query, "DEL", 1, "FROM", 3);
 }
 
 private bool _is_get_well_formed(char[] query)

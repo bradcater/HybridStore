@@ -592,8 +592,8 @@ void main(char[][] args)
                     response_thread.run();
                     break;
                 // do the error queries
-                case K.E_GET_KEYS:
-                    a.send(dlib.remote.response_as_json(false,BAD_QUERY_E_GET_KEYS));
+                case K.E_DEL_GET_KEYS:
+                    a.send(dlib.remote.response_as_json(false,BAD_QUERY_E_DEL_GET_KEYS));
                     break;
                 case K.E_SET_PAIRS:
                     a.send(dlib.remote.response_as_json(false,BAD_QUERY_E_SET_PAIRS));
