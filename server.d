@@ -204,7 +204,11 @@ private char[] _handle_del_get_set(char[][] servers, RedBlackTree btree, char[] 
                         if (kind == K.SET)
                         {
                             spl = split(key,"=");
-                            local_resp = _perform_local_op(btree,kind,spl[0],spl[1]);
+                            // spl.length != 2 is only possible with strict_syntax off.
+                            if (spl.length == 2)
+                            {
+                                local_resp = _perform_local_op(btree,kind,spl[0],spl[1]);
+                            }
                         } else {
                             local_resp = _perform_local_op(btree,kind,key);
                         }
@@ -237,6 +241,28 @@ private char[] _handle_del_get_set(char[][] servers, RedBlackTree btree, char[] 
     } else {
         return dlib.remote.response_as_json(true);
     }
+}
+
+private int _handle_elect(char[] query, Socket a)
+{
+    // ELECT SERVER newmaster;
+    char[][] p = params(query,5);
+    char[] server = p[1];
+    // if we're the old master, tell the new master to promote itself
+    if (MASTER)
+    {
+        dlib.remote.send_msg(server,query);
+    }
+    // set master status
+    MASTER = (SERVER == server);
+    // if we're the new master, tell the slaves
+    if (MASTER)
+    {
+        dlib.remote.send_msg_all(SERVER_POOL,SERVER,query);
+    }
+    a.send(dlib.remote.response_as_json(true));
+    dlib.remote.close_if_alive(a);
+    return 0;
 }
 
 private char[] _handle_get_r_l(char[][] servers, RedBlackTree btree, char[] tree_name, char[] input, int kind, char[][] p)
@@ -368,7 +394,7 @@ private char[] _handle_info_all(char[][] servers, RedBlackTree btree, char[] tre
  * If you are MASTER, then you get to decide to do the query or to pass it to another
  * server. All others must do the query.
  */
-private int _respond_to_normal_query(char[][] servers, Socket s, char[] input, int kind, RedBlackTree[char[]]* trees)
+private int _respond_to_normal_query(char[][] servers, Socket a, char[] input, int kind, RedBlackTree[char[]]* trees)
 {
     char[] resp;
     char[][] p;
@@ -454,9 +480,8 @@ private int _respond_to_normal_query(char[][] servers, Socket s, char[] input, i
             }
         }
     }
-    int size_sent = s.send(resp);
-    s.shutdown(SocketShutdown.BOTH);
-    s.close();
+    int size_sent = a.send(resp);
+    dlib.remote.close_if_alive(a);
     return 0;
 }
 
@@ -476,6 +501,7 @@ private RedBlackTree[char[]] _response_handler(Socket a, char[] query, int kind,
                 char[] tree_name = p[1];
                 trees[tree_name] = new RedBlackTree();
                 a.send(dlib.remote.response_as_json(true));
+                dlib.remote.close_if_alive(a);
             }
             break;
         case K.LOAD, K.LOAD_C:
@@ -497,9 +523,11 @@ private RedBlackTree[char[]] _response_handler(Socket a, char[] query, int kind,
                     }
                 }
             }
+            dlib.remote.close_if_alive(a);
             break;
         case K.PING:
             a.send(dlib.remote.response_as_json(true,PONG));
+            dlib.remote.close_if_alive(a);
             break;
         case K.DROP:
             synchronized
@@ -519,6 +547,7 @@ private RedBlackTree[char[]] _response_handler(Socket a, char[] query, int kind,
                     a.send(dlib.remote.response_as_json(false,INVALID_TREE));
                 }
             }
+            dlib.remote.close_if_alive(a);
             break;
         case K.SWAP:
             // SWAP SERVER myoldserver mynewserver;
@@ -531,40 +560,33 @@ private RedBlackTree[char[]] _response_handler(Socket a, char[] query, int kind,
             SERVER_POOL[index] = p[2];
             DEAD_SERVERS = array_remove(DEAD_SERVERS,index);
             a.send(dlib.remote.response_as_json(true));
+            dlib.remote.close_if_alive(a);
             break;
         case K.ELECT:
-            // ELECT SERVER newmaster;
-            char[][] p = params(query,5);
-            char[] server = p[1];
-            // if we're the old master, tell the new master to promote itself
-            if (MASTER)
+            int f_elect()
             {
-                dlib.remote.send_msg(server,query);
+                return _handle_elect(query,a);
             }
-            // set master status
-            MASTER = (SERVER == server);
-            // if we're the new master, tell the slaves
-            if (MASTER)
-            {
-                dlib.remote.send_msg_all(SERVER_POOL,SERVER,query);
-            }
-            a.send(dlib.remote.response_as_json(true));
+            Thread response_thread = new Thread(&f_elect);
+            response_thread.run();
             break;
         // do the normal queries
         case K.DEL, K.GET, K.GET_R, K.GET_R_L, K.SET, K.COMMIT, K.COMMIT_C, K.INFO, K.ALL:
-            int f()
+            int f_normal()
             {
                 return _respond_to_normal_query(SERVER_POOL,a,query,kind,&trees);
             }
-            Thread response_thread = new Thread(&f);
+            Thread response_thread = new Thread(&f_normal);
             response_thread.run();
             break;
         // do the error queries
         case K.E_DEL_GET_KEYS:
             a.send(dlib.remote.response_as_json(false,BAD_QUERY_E_DEL_GET_KEYS));
+            dlib.remote.close_if_alive(a);
             break;
         case K.E_SET_PAIRS:
             a.send(dlib.remote.response_as_json(false,BAD_QUERY_E_SET_PAIRS));
+            dlib.remote.close_if_alive(a);
             break;
         default:
             a.send(dlib.remote.response_as_json(false,UNRECOGNIZED));
@@ -605,16 +627,13 @@ void main(char[][] args)
                 }
                 go = false;
                 a.send(dlib.remote.response_as_json(true));
+                dlib.remote.close_if_alive(a);
             } else {
                 trees = _response_handler(a,query,kind,trees);
             }
         } else {
             a.send(dlib.remote.response_as_json(false,BAD_QUERY));
-        }
-        if (a.isAlive())
-        {
-            a.shutdown(SocketShutdown.BOTH);
-            a.close();
+            dlib.remote.close_if_alive(a);
         }
     }
     s.shutdown(SocketShutdown.BOTH);

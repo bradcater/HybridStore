@@ -1,5 +1,6 @@
 module dlib.parser;
 
+import dlib.config;
 import dlib.core;
 import std.string;
 
@@ -116,7 +117,7 @@ bool is_del(char[] query)
 {
     // DEL mykey FROM mytree;
     return (_is_del_well_formed(query) &&
-            _is_legal_get_keyset(split(query)[1]));
+            (!STRICT_SYNTAX || _is_legal_get_keyset(split(query)[1])));
 }
 
 bool is_e_del_keys(char[] query)
@@ -130,7 +131,7 @@ bool is_get(char[] query)
 {
     // GET mykey FROM mytree;
     return (_is_get_well_formed(query) &&
-            _is_legal_get_keyset(split(query)[1]));
+            (!STRICT_SYNTAX || _is_legal_get_keyset(split(query)[1])));
 }
 
 bool is_e_get_keys(char[] query)
@@ -185,7 +186,7 @@ bool is_set(char[] query)
 {
     // SET mykey=myvalue,[mykey2=myvalue2,...] IN mytree;
     return (_is_set_well_formed(query) &&
-            _is_set_pairs_well_formed(query));
+            (!STRICT_SYNTAX || _is_set_pairs_well_formed(query)));
 }
 
 bool is_e_set_pairs(char[] query)

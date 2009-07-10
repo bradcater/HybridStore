@@ -10,6 +10,15 @@ import std.socketstream;
 import std.stdio;
 import std.string;
 
+void close_if_alive(Socket a)
+{
+    if (a.isAlive())
+    {
+        a.shutdown(SocketShutdown.BOTH);
+        a.close();
+    }
+}
+
 private int _hash(char[] s, int sofar=0)
 {
     return (s.length == 0) ? sofar : _hash(s[1..$], sofar * 11 + s[0]);

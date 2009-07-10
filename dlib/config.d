@@ -4,26 +4,36 @@ import dlib.verbal;
 import std.string;
 
 /*
- * NETWORK
+ * DISK
  */
 
-// the size of the buffer to allocate to receive messages
-const int BUFFER_SIZE = 8192;
+char[] CONFIG_FILE = "hybridstore.conf";
 
-// the default port to use
-ushort PORT = 41111;
+/*
+ * FUNCTIONS
+ */
 
-// if true, this is the master
-bool MASTER = true;
+void arg_error(char[] arg, char[] val)
+{
+    say(format("Unrecognized value %s for argument %s.", val, arg),VERBOSITY,1);
+}
 
-// the servers to use
-char[] SERVER = "localhost";
-char[][] SERVER_POOL = ["localhost","localhost:51111","10.0.1.115:51111"];
-int[] SERVER_WEIGHTS = [2,1,1];
-int[] DEAD_SERVERS;
+bool numeric_range(char[] val)
+{
+    return (val == "0" || val == "1" || val == "2" || val == "3" || val == "4" ||
+            val == "5" || val == "6" || val == "7" || val == "8" || val == "9");
+}
 
-// the count of unique servers (since we duplicate them for weighting)
-int SERVER_COUNT;
+int set_numeric_range(char[] val, char[] name, int dephault)
+{
+    if (numeric_range(val))
+    {
+        return cast(int)atoi(val);
+    } else {
+        arg_error(val,name);
+        return dephault;
+    }
+}
 
 /*
  * MEMORY
@@ -44,12 +54,6 @@ const char[] NUMERIC = "NUMERIC";
 
 // the number of most frequent queries to maintain
 int QUERY_COUNT = 10;
-
-/*
- * DISK
- */
-
-char[] CONFIG_FILE = "hybridstore.conf";
 
 /*
  * MESSAGES
@@ -105,30 +109,33 @@ const char[] UNRECOGNIZED = "Query seems well-formed, but it is unrecognized.";
 const char[] WELCOME = "Welcome to HybridStore.";
 
 /*
- * FUNCTIONS
+ * NETWORK
  */
 
-void arg_error(char[] arg, char[] val)
-{
-    say(format("Unrecognized value %s for argument %s.", val, arg),VERBOSITY,1);
-}
+// the size of the buffer to allocate to receive messages
+const int BUFFER_SIZE = 8192;
 
-bool numeric_range(char[] val)
-{
-    return (val == "0" || val == "1" || val == "2" || val == "3" || val == "4" ||
-            val == "5" || val == "6" || val == "7" || val == "8" || val == "9");
-}
+// the default port to use
+ushort PORT = 41111;
 
-int set_numeric_range(char[] val, char[] name, int dephault)
-{
-    if (numeric_range(val))
-    {
-        return cast(int)atoi(val);
-    } else {
-        arg_error(val,name);
-        return dephault;
-    }
-}
+// if true, this is the master
+bool MASTER = true;
+
+// the servers to use
+char[] SERVER = "localhost";
+char[][] SERVER_POOL = ["localhost","localhost:51111","10.0.1.115:51111"];
+int[] SERVER_WEIGHTS = [2,1,1];
+int[] DEAD_SERVERS;
+
+// the count of unique servers (since we duplicate them for weighting)
+int SERVER_COUNT;
+
+/*
+ * SYNTAX
+ */
+
+// to make strict checks on input queries
+bool STRICT_SYNTAX = true;
 
 unittest {
     assert(BUFFER_SIZE > 0,"BUFFER_SIZE must be positive.");

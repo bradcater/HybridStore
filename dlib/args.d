@@ -8,6 +8,18 @@ import dlib.stats;
 import dlib.verbal;
 import std.string;
 
+private void _arg_true_false(bool var, char[] c, char[] val)
+{
+    if (val == "true")
+    {
+        var = true;
+    } else if (val == "false") {
+        var = false;
+    } else {
+        arg_error(c,val);
+    }
+}
+
 /*
  * Process all of the command-line arguments along with the conf file.
  */
@@ -35,17 +47,13 @@ void process_args(char[][] args)
         switch (c)
         {
             case "auto_prune":
-                if (val == "true")
-                {
-                    AUTO_PRUNE = true;
-                } else if (val == "false") {
-                    AUTO_PRUNE = false;
-                } else {
-                    arg_error(c,val);
-                }
+                _arg_true_false(AUTO_PRUNE,c,val);
                 break;
             case "compression_level":
                 COMPRESSION_LEVEL = set_numeric_range(val,"compression_level",COMPRESSION_LEVEL);
+                break;
+            case "master":
+                _arg_true_false(MASTER,c,val);
                 break;
             case "max_size":
                 try
@@ -58,16 +66,6 @@ void process_args(char[][] args)
                         say(format("%s must be greater than %s.", c, val),VERBOSITY,1);
                     }
                 } catch (Exception e) {
-                    arg_error(c,val);
-                }
-                break;
-            case "mode":
-                if (val == "master")
-                {
-                    MASTER = true;
-                } else if (val == "slave") {
-                    MASTER = false;
-                } else {
                     arg_error(c,val);
                 }
                 break;
@@ -115,6 +113,9 @@ void process_args(char[][] args)
                         }
                     }
                 }
+                break;
+            case "strict_syntax":
+                _arg_true_false(STRICT_SYNTAX,c,val);
                 break;
             case "verbosity":
                 VERBOSITY = set_numeric_range(val,"verbosity",VERBOSITY);

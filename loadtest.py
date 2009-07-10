@@ -15,7 +15,7 @@ def socket_send(msg,p):
     s.close()
     return resp
 
-TRIALS = 999999
+TRIALS = 500000
 METHODS = ('hybridstore','memcached','tokyocabinet','mysql')
 METHOD = METHODS[0]
 b = 30
@@ -25,11 +25,12 @@ start = time.time()
 if METHOD == 'hybridstore':
     #msg = "CREATE TREE test;"
     #socket_send(msg,PORT)
-    for i in xrange(0,TRIALS,b):
-        #msg = "SET %s IN test;" % ",".join([ "%d=%d" % (j,j) for j in xrange(i,i+b) ])
-        msg = "GET %s FROM test;" % ",".join([ "%d" % j for j in xrange(i,i+b) ])
+    for i in xrange(0+TRIALS,TRIALS*2-1,b):
+        msg = "SET %s IN test;" % ",".join([ "%d=%d" % (j,j) for j in xrange(i,i+b) ])
+        #msg = "GET %s FROM test;" % ",".join([ "%d" % j for j in xrange(i,i+b) ])
         #msg = "GET %d FROM test RANGE %d;" % (i,i+b)
         resp = socket_send(msg,PORT)
+    #socket_send("DROP TREE test;",PORT)
 elif METHOD == 'memcached':
     import memcache
     memc = memcache.Client(['127.0.0.1:11211','10.0.1.115:11211'])

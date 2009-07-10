@@ -142,6 +142,22 @@ class TestErrors(HybridStoreTestBase):
         self.assertEqual(json.get('response'),self._invalid('file'))
 
 
+class TestInfo(HybridStoreTestBase):
+    def testMaxMinSize(self):
+        json = self._hs.set(('a','z'),'test')
+        self._json_ok(json)
+        self._hs.set(('z','a'),'test')
+        self._json_ok(json)
+        json = self._hs.info('test')
+        self._json_ok(json)
+        # {"localhost":{"size":"481200","status":"Ok.","max":"99999","common_queries":{"INFO FROM test;":1,"query_count":22713},"min":"0"}}
+        l = json.get('response',{}).get('localhost',{})
+        self.assertEqual(l.get('status'),'Ok.')
+        self.assertEqual(l.get('max'),'z')
+        self.assertEqual(l.get('min'),'a')
+        self.assertEqual(l.get('size'),'2')
+
+
 class TestPersistence(HybridStoreTestBase):
     def _from_persistent(self):
         self._assert_get('wolf','Canis lupus','test')
