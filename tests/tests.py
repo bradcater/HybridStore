@@ -102,13 +102,21 @@ class TestErrors(HybridStoreTestBase):
         self._json_error(json)
         self.assertEqual(json.get('response'),'Query seems well-formed, but it is unrecognized.')
 
+    def testBadQueryEGetKeys(self):
+        json = self._hs.send('GET a=0 FROM test;')
+        self._json_error(json)
+        self.assertEqual(json.get('response'),'The given key(s) is invalid.')
+        json = self._hs.send('GET a,b=1 FROM test;')
+        self._json_error(json)
+        self.assertEqual(json.get('response'),'The given key(s) is invalid.')
+
     def testBadQueryESetPairs(self):
         json = self._hs.send('SET a0 IN test;')
         self._json_error(json)
-        self.assertEqual(json.get('response'),'The given key->value pairs are invalid.')
+        self.assertEqual(json.get('response'),'The given key->value pair(s) is invalid.')
         json = self._hs.send('SET a=0,b1 IN test;')
         self._json_error(json)
-        self.assertEqual(json.get('response'),'The given key->value pairs are invalid.')
+        self.assertEqual(json.get('response'),'The given key->value pair(s) is invalid.')
 
     def testDropInvalidTree(self):
         json = self._hs.drop('t')
