@@ -118,6 +118,9 @@ void process_args(char[][] args)
             case "strict_syntax":
                 STRICT_SYNTAX = _arg_true_false(c,val,STRICT_SYNTAX);
                 break;
+            case "strict_trees":
+                STRICT_TREES = _arg_true_false(c,val,STRICT_TREES);
+                break;
             case "track_queries":
                 TRACK_QUERIES = _arg_true_false(c,val,TRACK_QUERIES);
                 break;

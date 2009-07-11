@@ -21,28 +21,6 @@ class RedBlackTree
         root = null;
         size = 0; 
     }
-
-    // create a tree based off of another tree 
-    this(inout RedBlackTree tree)
-    {
-        duplicate(tree); 
-    }
-
-    // create a tree based on a key->value pair
-    this(char[] data, char[] value)
-    {
-        root = null;
-        size = 0;
-        this.add(data,value);
-    }
-    
-    // create a tree based on a ikey->value pair
-    this(double idata, char[] value)
-    {
-        root = null;
-        size = 0;
-        this.add(idata,value);
-    }
     
     // destroy all contents in tree 
     ~this()
@@ -57,16 +35,26 @@ class RedBlackTree
     // add data to the tree 
     bool add(char[] data, char[] value)
     {
-        root = add_r(root, data, value, root);
+        root = add_r(root, new Node(data,value), root);
         root.red = 0;
+        if (STRICT_TREES)
+        {
+            isValid();
+            print();
+        }
         return true;
     }
 
     // add idata to the tree
     bool add(double idata, char[] value)
     {
-        root = add_r(root, idata, value, root);
+        root = add_r(root, new Node(idata,value), root);
         root.red = 0;
+        if (STRICT_TREES)
+        {
+            isValid();
+            print();
+        }
         return true;
     }
     
@@ -79,6 +67,11 @@ class RedBlackTree
         {
             root.red = 0;
         }
+        if (STRICT_TREES)
+        {
+            isValid();
+            print();
+        }
         return true;
     }
     
@@ -90,6 +83,11 @@ class RedBlackTree
         if (root !is null)
         {
             root.red = 0;
+        }
+        if (STRICT_TREES)
+        {
+            isValid();
+            print();
         }
         return true;
     }
@@ -107,20 +105,14 @@ class RedBlackTree
     // return the maximum keyed element in the tree
     Node max(Node node = null)
     {
-        if (node is null)
-        {
-            node = root;
-        }
+        node = set_node(node);
         return superlative_r(node,RIGHT);
     }
     
     // return the minimum keyed element in the tree
     Node min(Node node = null)
     {
-        if (node is null)
-        {
-            node = root;
-        }
+        node = set_node(node);
         return superlative_r(node,LEFT);
     }
     
@@ -218,20 +210,6 @@ class RedBlackTree
     // true if empty
     bool isEmpty() { return getSize() == 0; }
 
-    // merge data from tree into this one
-    void merge(inout RedBlackTree tree)
-    {
-        createCopy(tree.root);
-    }
-
-    // make this tree a duplicate of another  
-    void duplicate(inout RedBlackTree tree)
-    {
-        destroy();
-        createCopy(tree.root); 
-        size = tree.size; 
-    }
-
     // foreach iterator forwards 
     int opApply(int delegate(inout Node) dg)
     {
@@ -255,17 +233,6 @@ class RedBlackTree
     Node set_node(Node node)
     {
         return (node is null ? root : node);
-    }
-    
-    // copy from leafSrc into leafDst in order
-    void createCopy(Node leafSrc)
-    {
-        if (leafSrc !is null)
-        {
-            createCopy(leafSrc.link[LEFT]);
-            (leafSrc.data is null) ? add(leafSrc.idata,leafSrc.getValue()) : add(leafSrc.data,leafSrc.getValue());
-            createCopy(leafSrc.link[RIGHT]);
-        }
     }
   
     // iterate tree forwards 
@@ -348,7 +315,7 @@ class RedBlackTree
                     {
                         done = 1;
                     } else if (isRed(save)) {
-                        save.red = 0;
+                        //save.red = 0;
                         done = 1;
                     }
                     delete node;
@@ -425,60 +392,38 @@ class RedBlackTree
     }
 
     // add recursive
-    Node add_r(Node node, char[] data, char[] value, Node oldest)
+    Node add_r(Node node, Node new_node, Node oldest)
     {
         if (node is null)
         {
-            node = new Node(data, value);
+            node = new_node;
             size++;
             remove_oldest(oldest);
-        } else if (data == node.data) {
-            node.setValue(value);
+        } else if (node.sameData(new_node)) {
+            node = new_node;
         } else {
-            node = add_r_logic(node, node.data < data, data, double.min, value, oldest);
-        }
-        return node;
-    }
-    
-    // add recursive
-    Node add_r(Node node, double idata, char[] value, Node oldest)
-    {
-        if (node is null)
-        {
-            node = new Node(idata, value);
-            size++;
-            remove_oldest(oldest);
-        } else if (idata == node.idata) {
-            node.setValue(value);
-        } else {
-            node = add_r_logic(node, node.idata < idata, null, idata, value, oldest);
-        }
-        return node;
-    }
-    
-    // add_r logic
-    Node add_r_logic(Node node, int dir, char[] data, double idata, char[] value, Node oldest)
-    {
-        if ((node !is null) && (oldest !is null) && (node.created_at < oldest.created_at))
-        {
-            oldest = node;
-        }
-        node.link[dir] = (data is null) ? add_r(node.link[dir], idata, value, oldest) : add_r(node.link[dir], data, value, oldest);
-        if (isRed(node.link[dir]))
-        {
-            if (isRed(node.link[!dir]))
+            if (node !is null && oldest !is null && node.created_at < oldest.created_at)
             {
-                /* Case 1 */
-                node.red = 1;
-                node.link[LEFT].red = 0;
-                node.link[RIGHT].red = 0;
-            } else {
-                /* Cases 2 & 3 */
-                if (isRed(node.link[dir].link[dir]))
+                oldest = node;
+            }
+            int dir = (node.data !is null) ? node.data < new_node.data : node.idata < new_node.idata;
+            node.link[dir] = add_r(node.link[dir], new_node, oldest);
+            if (isRed(node.link[dir]))
+            {
+                if (isRed(node.link[!dir]))
                 {
-                    node = singleRotation(node, !dir);
-                } else if (isRed(node.link[dir].link[!dir])) {
-                    node = doubleRotation(node, !dir);
+                    /* Case 1 */
+                    node.red = 1;
+                    node.link[LEFT].red = 0;
+                    node.link[RIGHT].red = 0;
+                } else {
+                    /* Cases 2 & 3 */
+                    if (isRed(node.link[dir].link[dir]))
+                    {
+                        node = singleRotation(node, !dir);
+                    } else if (isRed(node.link[dir].link[!dir])) {
+                        node = doubleRotation(node, !dir);
+                    }
                 }
             }
         }
@@ -515,7 +460,15 @@ class RedBlackTree
         Node[] nodes = nodes_r(node);
         foreach (n; nodes)
         { 
-            writefln("%s -> %s", n.getData(), n.getValue());
+            writefln("%s -> %s, %s", n.getData(), n.getValue(), n.red);
+            if (n.link[LEFT] !is null)
+            {
+                writefln("    left is %s", n.link[LEFT].getData());
+            }
+            if (n.link[RIGHT] !is null)
+            {
+                writefln("    right is %s", n.link[RIGHT].getData());
+            }
         }
     }
 
@@ -547,6 +500,7 @@ class RedBlackTree
                 if (isRed(ln) || isRed(rn))
                 {
                     say("Red violation.",VERBOSITY,1);
+                    this.print();
                     return 0;
                 }
             }
@@ -557,12 +511,14 @@ class RedBlackTree
                 (rn !is null && rn.data !is null && rn.data <= node.data))
             {
                 say("Binary tree violation.",VERBOSITY,1);
+                this.print();
                 return 0;
             }
             /* Black height mismatch */
             if (lh != 0 && rh != 0 && lh != rh)
             {
-                say("Black violation.",VERBOSITY,1);
+                say(format("Black violation: lh=%s, rh=%s.", lh, rh),VERBOSITY,1);
+                this.print();
                 return 0;
             }
             /* Only count black links */
@@ -578,6 +534,7 @@ class RedBlackTree
     // single rotation 
     Node singleRotation(Node node, int dir)
     {
+        say(format("RBTree.singleRotation(): %s->%s %s", node.getData(), node.getValue(), dir),VERBOSITY,9);
         Node save = node.link[!dir];
         node.link[!dir] = save.link[dir];
         save.link[dir] = node;
@@ -589,6 +546,7 @@ class RedBlackTree
     // double rotation 
     Node doubleRotation(Node node, int dir)
     {
+        say(format("RBTree.doubleRotation(): %s->%s %s", node.getData(), node.getValue(), dir),VERBOSITY,9);
         node.link[!dir] = singleRotation(node.link[!dir], !dir);
         return singleRotation(node, dir);
     }
@@ -648,12 +606,19 @@ class Node
     {
         this.cvalue = z_compress(value);
     }
+    bool sameData(Node n)
+    {
+        return ((this.data !is null && n.data !is null && this.data == n.data) ||
+                (this.idata !is double.min && n.idata !is double.min && this.idata == n.idata));
+    }
     unittest {
         Node n_s = new Node("mydata","myvalue");
         assert(n_s.getData() == "mydata", "Node failed data lookup.");
         assert(n_s.getValue() == "myvalue", "Node failed value lookup.");
         n_s.setValue("mynewvalue");
         assert(n_s.getValue() == "mynewvalue", "Node failed new value lookup.");
+        assert((new Node("a","b")).sameData(new Node("a","c")) == true, "Node failed sameData() check.");
+        assert((new Node("a","b")).sameData(new Node("b","b")) == false, "Node failed sameData() check.");
     }
 }
 
