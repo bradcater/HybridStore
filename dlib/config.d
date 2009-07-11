@@ -200,7 +200,7 @@ const char[] WELCOME = "Welcome to HybridStore.";
 /**
     The size of the buffer to allocate to receive messages.
 */
-const int BUFFER_SIZE = 16384;
+const int BUFFER_SIZE = 8192;
 
 /**
     The default port to use.
