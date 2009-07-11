@@ -1,5 +1,8 @@
 module dlib.shorttests;
 
+/**
+    Returns true if c is on [a,z], false otherwise.
+*/
 private bool _is_low_alpha(char[] c)
 {
     return (c == "a" || c == "b" || c == "c" || c == "d" || c == "e" ||
@@ -9,6 +12,9 @@ private bool _is_low_alpha(char[] c)
             c == "u" || c == "v" || c == "w" || c == "x" || c == "y" || c == "z");
 }
 
+/**
+    Returns true if c is on [A,Z], false otherwise.
+*/
 private bool _is_up_alpha(char[] c)
 {
     return (c == "A" || c == "B" || c == "C" || c == "D" || c == "E" ||
@@ -18,47 +24,74 @@ private bool _is_up_alpha(char[] c)
             c == "U" || c == "V" || c == "W" || c == "X" || c == "Y" || c == "Z");
 }
 
+/**
+    Returns true if c is a letter, false otherwise.
+*/
 bool is_alpha(char[] c)
 {
      return (_is_low_alpha(c) || _is_up_alpha(c));
 }
 
+/**
+    Returns true if c is a comma, false otherwise.
+*/
 bool is_comma(char[] c)
 {
     return (c == ",");
 }
 
+/**
+    Returns true if c is on [0,9] and is a string, false otherwise.
+*/
 bool is_digit(char[] c)
 {
     return (c == "0" || c == "1" || c == "2" || c == "3" || c == "4" ||
             c == "5" || c == "6" || c == "7" || c == "8" || c == "9");
 }
 
+/**
+    Returns true if c is a period, false otherwise.
+*/
 bool is_dot(char[] c)
 {
     return (c == ".");
 }
 
+/**
+    Returns true if c is an equals sign, false otherwise.
+*/
 bool is_equals(char[] c)
 {
     return (c == "=");
 }
 
+/**
+    Returns true if c is an open parenthesis, false otherwise.
+*/
 private bool _is_open_paren(char[] c)
 {
     return (c == "(");
 }
 
+/**
+    Returns true if c is a close parenthesis, false otherwise.
+*/
 private bool _is_close_paren(char[] c)
 {
     return (c == ")");
 }
 
+/**
+    Returns true if c is an open or close parenthesis, false otherwise.
+*/
 bool is_paren(char[] c)
 {
     return (_is_open_paren(c) || _is_close_paren(c));
 }
 
+/**
+    Returns true if x is a power of 2, false otherwise.
+*/
 bool is_pow2(int x)
 {
     int a = 2;
@@ -69,16 +102,25 @@ bool is_pow2(int x)
     return a == x;
 }
 
+/**
+    Returns true if c is a semi-colon, false otherwise.
+*/
 bool is_semi(char[] c)
 {
     return (c == ";");
 }
 
+/**
+    Returns true if c is a single space character, false otherwise.
+*/
 bool is_space(char[] c)
 {
     return (c == " ");
 }
 
+/**
+    Returns true if c is an underscore, false otherwise.
+*/
 bool is_under(char[] c)
 {
     return (c == "_");
