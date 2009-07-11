@@ -4,9 +4,9 @@ import dlib.core;
 import std.stdio;
 import std.string;
 
-/*
- * If a variable is, e.g., "string", we should cut it to string.
- */
+/**
+    Returns s without leading and training quotes.
+*/
 private char[] _chop_string(char[] s)
 {
     if (s[0..1] == "\"" && s[$-1..$] == "\"")
@@ -16,11 +16,12 @@ private char[] _chop_string(char[] s)
     return s;
 }
 
-/*
- * Given { "status" : "msg" , "response" : "{ "status" : "msg" , "response" : ... }" },
- * return json["status"] -> "msg" , json["response"] -> "{ "status" : "msg" , "response" : ... }"
- * Do not recurse.
- */
+/**
+    Given { "status" : "msg" , "response" : "{ "status" : "msg" , "response" : ... }" },
+    returns json["status"] -> "msg" ,
+       json["response"] -> "{ "status" : "msg" , "response" : ... }"
+    Do not recurse.
+*/
 char[][char[]] decode(char[] j)
 {
     char[][char[]] json;
@@ -51,10 +52,10 @@ char[][char[]] decode(char[] j)
     return json;
 }
 
-/*
- * Given arr["status"] -> "Ok.", arr["response"] -> "There are 10 nodes.",
- * return {"status":"Ok.","response":"There are 10 nodes."}
- */
+/**
+    Given arr["status"] -> "Ok.", arr["response"] -> "There are 10 nodes.",
+    returns {"status":"Ok.","response":"There are 10 nodes."}
+*/
 char[] encode(char[][char[]] arr, bool wrap_vals = true)
 {
     char[] json;
@@ -70,19 +71,19 @@ char[] encode(char[][char[]] arr, bool wrap_vals = true)
     return format("{%s}", json[0..$-1]);
 }
 
-/*
- * Given a "JSON" object, return true if the value associated with the given
- * key matches the given value, otherwise false.
- */
+/**
+    Given a "JSON" object, returns true if the value associated with the given
+    key matches the given value, false otherwise.
+*/
 bool has_and_is(char[][char[]] json, char[] key, char[] val)
 {
     return (has_key(json,key) && json[key] == val);
 }
 
-/*
- * Given a "JSON" object, return true if the given key is present, false
- * otherwise.
- */
+/**
+    Given a "JSON" object, returns true if the given key is present, false
+    otherwise.
+*/
 bool has_key(char[][char[]] json, char[] key)
 {
     return array_contains(json.keys,key);

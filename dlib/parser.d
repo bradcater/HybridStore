@@ -5,6 +5,7 @@ import dlib.core;
 import std.string;
 
 /*
+ * PING;
  * CREATE TREE mytree;
  * LOAD mytree FROM myfile [COMPRESSED];
  * SET mykey=myvalue[,mykey2=myvalue2]* IN mytree;
@@ -19,6 +20,9 @@ import std.string;
  * EXIT;
  */ 
 
+/**
+    A list of recognized query types.
+*/
 enum K
 {
     // valid queries
@@ -45,11 +49,17 @@ enum K
     OTHER
 }
 
+/**
+    Returns true if query appears to be a proper query, false otherwise.
+*/
 bool is_query(char[] query)
 {
     return (query.length > 0 && query[$-1] == ';');
 }
 
+/**
+    Returns a query kind.
+*/
 int query_kind(char[] query)
 {
     if (is_set(query)) {
@@ -101,18 +111,27 @@ int query_kind(char[] query)
  * in-memory operations
  */
 
+/**
+    Returns true if query is type K.ALL, false otherwise.
+*/
 bool is_all(char[] query)
 {
     // ALL FROM mytree;
     return _is_op_well_formed(query, "ALL", 0, "FROM", 2);
 }
 
+/**
+    Returns true if query is type K., false otherwise.
+*/
 bool is_create(char[] query)
 {
     // CREATE TREE mytree;
     return _is_op_well_formed(query, "CREATE", 0, "TREE", 2);
 }
 
+/**
+    Returns true if query is type K.DEL, false otherwise.
+*/
 bool is_del(char[] query)
 {
     // DEL mykey FROM mytree;
@@ -120,6 +139,9 @@ bool is_del(char[] query)
             (!STRICT_SYNTAX || _is_legal_get_keyset(split(query)[1])));
 }
 
+/**
+    Returns true if query is type K.E_DEL_KEYS, false otherwise.
+*/
 bool is_e_del_keys(char[] query)
 {
     // DEL my=key FROM mytree;
@@ -127,6 +149,9 @@ bool is_e_del_keys(char[] query)
             !_is_legal_get_keyset(split(query)[1]));
 }
 
+/**
+    Returns true if query is type K.GET, false otherwise.
+*/
 bool is_get(char[] query)
 {
     // GET mykey FROM mytree;
@@ -134,6 +159,9 @@ bool is_get(char[] query)
             (!STRICT_SYNTAX || _is_legal_get_keyset(split(query)[1])));
 }
 
+/**
+    Returns true if query is type K.E_GET_KEYS, false otherwise.
+*/
 bool is_e_get_keys(char[] query)
 {
     // GET my=key FROM mytree;
@@ -141,6 +169,9 @@ bool is_e_get_keys(char[] query)
             !_is_legal_get_keyset(split(query)[1]));
 }
 
+/**
+    Returns true if query is type K.GET_R, false otherwise.
+*/
 bool is_get_range(char[] query)
 {
     // GET mykey_lower FROM mytree RANGE mykey_upper;
@@ -157,6 +188,9 @@ bool is_get_range(char[] query)
     return false;
 }
 
+/**
+    Returns true if query is type K.GET_R_L, false otherwise.
+*/
 bool is_get_range_limit(char[] query)
 {
     // GET mykey_lower FROM mytree RANGE mykey_upper LIMIT mylimit;
@@ -176,12 +210,18 @@ bool is_get_range_limit(char[] query)
     return false;
 }
 
+/**
+    Returns true if query is type K.INFO, false otherwise.
+*/
 bool is_info(char[] query)
 {
     // INFO FROM mytree;
     return _is_op_well_formed(query, "INFO", 0, "FROM", 2);
 }
 
+/**
+    Returns true if query is type K.SET, false otherwise.
+*/
 bool is_set(char[] query)
 {
     // SET mykey=myvalue,[mykey2=myvalue2,...] IN mytree;
@@ -189,6 +229,9 @@ bool is_set(char[] query)
             (!STRICT_SYNTAX || _is_set_pairs_well_formed(query)));
 }
 
+/**
+    Returns true if query is type K.E_SET_PAIRS, false otherwise.
+*/
 bool is_e_set_pairs(char[] query)
 {
     // SET mykey=myvalue,mykey2myvalue2,... IN mytree;
@@ -200,24 +243,36 @@ bool is_e_set_pairs(char[] query)
  * disk manipulations
  */
 
+/**
+    Returns true if query is type K.COMMIT, false otherwise.
+*/
 bool is_commit(char[] query)
 {
     // COMMIT mytree TO myfile;
     return _is_op_well_formed(query, "COMMIT", 1, "TO", 3);
 }
 
+/**
+    Returns true if query is type K.COMMIT_C, false otherwise.
+*/
 bool is_commit_compressed(char[] query)
 {
     // COMMIT mytree TO myfile COMPRESSED;
     return _is_op_well_formed(query, "COMMIT", 1, "TO", 3, 3, "COMPRESSED", 4);
 }
 
+/**
+    Returns true if query is type K.LOAD, false otherwise.
+*/
 bool is_load(char[] query)
 {
     // LOAD mytree FROM myfile;
     return _is_op_well_formed(query, "LOAD", 1, "FROM", 3);
 }
 
+/**
+    Returns true if query is type K.LOAD_C, false otherwise.
+*/
 bool is_load_compressed(char[] query)
 {
     // LOAD mytree FROM myfile COMPRESSED;
@@ -228,28 +283,43 @@ bool is_load_compressed(char[] query)
  * other
  */
 
+/**
+    Returns true if query is type K.DROP, false otherwise.
+*/
 bool is_drop(char[] query)
 {
     // DROP TREE mytree;
     return _is_op_well_formed(query, "DROP", 0, "TREE", 2);
 }
 
+/**
+    Returns true if query is type K.EXIT, false otherwise.
+*/
 bool is_exit(char[] query)
 {
     return (query == "EXIT;");
 }
 
+/**
+    Returns true if query is type K.PING, false otherwise.
+*/
 bool is_ping(char[] query)
 {
     return (query == "PING;");
 }
 
+/**
+    Returns true if query is type K.SWAP, false otherwise.
+*/
 bool is_swap(char[] query)
 {
     // SWAP SERVER myoldserver mynewserver;
     return _is_op_well_formed(query, "SWAP", 0, "SERVER", 3);
 }
 
+/**
+    Returns true if query is type K.ELECT, false otherwise.
+*/
 bool is_elect(char[] query)
 {
     // ELECT SERVER newmaster;
@@ -260,6 +330,9 @@ bool is_elect(char[] query)
  * params
  */
 
+/**
+    Returns a list of parameters in query beginning at index start.
+*/
 char[][] params(char[] query, int start)
 {
     return split(query[start..$-1]);
@@ -269,6 +342,9 @@ char[][] params(char[] query, int start)
  * private helpers
  */
 
+/**
+    Returns true if the gien keyset is valid, false otherwise.
+*/
 private bool _is_legal_get_keyset(char[] keyset)
 {
     char[][] keys = split(keyset,",");
@@ -282,26 +358,41 @@ private bool _is_legal_get_keyset(char[] keyset)
     return true;
 }
 
+/**
+    Returns true if the given key is valid, false otherwise.
+*/
 private bool _is_legal_key(char[] key)
 {
     return !array_contains(key,"=");
 }
 
+/**
+    Returns true if query is a proper DEL query, false otherwise.
+*/
 private bool _is_del_well_formed(char[] query)
 {
     return _is_op_well_formed(query, "DEL", 1, "FROM", 3);
 }
 
+/**
+    Returns true if query is a proper GET query, false otherwise.
+*/
 private bool _is_get_well_formed(char[] query)
 {
     return _is_op_well_formed(query, "GET", 1, "FROM", 3);
 }
 
+/**
+    Returns true is query is a proper SET query, false otherwise.
+*/
 private bool _is_set_well_formed(char[] query)
 {
     return _is_op_well_formed(query, "SET", 1, "IN", 3);
 }
 
+/**
+    Returns true if query has proper SET pairs, false otherwise.
+*/
 private bool _is_set_pairs_well_formed(char[] query)
 {
     char[][] kv_pairs = split(split(query)[1],",");
@@ -313,11 +404,18 @@ private bool _is_set_pairs_well_formed(char[] query)
     return true;
 }
 
+/**
+    Returns true if query appears to be a proper kind query, false otherwise.
+*/
 private bool _is_op(char[] query, char[] kind)
 {
     return (query.length > kind.length && query[0..kind.length] == kind && query[kind.length..kind.length+1] == " ");
 }
 
+/**
+    Returns true if the given query is a well-formatted query of the given data.
+    This might be better as a parser, but presently it is like a tokenizer.
+*/
 private bool _is_op_well_formed(char[] query, char[] kind, int index, char[] goal, int exp_length, 
                                 int index_opt = 0, char[] goal_opt = " ", int exp_length_opt = 0,
                                 int index_opt2 = 0, char[] goal_opt2 = " ", int exp_length_opt2 = 0)

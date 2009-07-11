@@ -10,6 +10,9 @@ import std.socketstream;
 import std.stdio;
 import std.string;
 
+/**
+    Closes a if it is not already closed.
+*/
 void close_if_alive(Socket a)
 {
     if (a.isAlive())
@@ -19,16 +22,25 @@ void close_if_alive(Socket a)
     }
 }
 
+/**
+    Returns a numeric hash for the given string.
+*/
 private int _hash(char[] s, int sofar=0)
 {
     return (s.length == 0) ? sofar : _hash(s[1..$], sofar * 11 + s[0]);
 }
 
+/**
+    Returns one member of servers by hashing key.
+*/
 char[] choose_server(char[][] servers, char[] key)
 {
     return servers[choose_server_index(servers,key)];
 }
 
+/**
+    Returns an index of servers to which key must map.
+*/ 
 int choose_server_index(char[][] servers, char[] key)
 {
     int sum = _hash(key) % SERVER_COUNT;
@@ -40,6 +52,9 @@ int choose_server_index(char[][] servers, char[] key)
     return sum;
 }
 
+/**
+    Returns the data read from s.
+*/
 char[] collect_input(Socket s)
 {
     //char buff[BUFFER_SIZE];
@@ -60,6 +75,9 @@ char[] collect_input(Socket s)
     return r;
 }
 
+/**
+    Returns a list of Nodes generated from the JSON output from server.
+*/
 Node[] get_remote_nodes(char[] server, char[] tree_name)
 {
     char[] query = format("ALL FROM %s;", tree_name);
@@ -67,6 +85,9 @@ Node[] get_remote_nodes(char[] server, char[] tree_name)
     return (response == NULL) ? null : nodes_from_response(response);
 }
 
+/**
+    Returns a list of Nodes generated from response (JSON).
+*/
 Node[] nodes_from_response(char[] response)
 {
     Node[] nodes;
@@ -76,7 +97,7 @@ Node[] nodes_from_response(char[] response)
          * TODO: I can't get this to fire. When is it called?
          * It should be used in GET_R in server.d, but it never appears.
          */
-        writefln(format("nodes_from_response response: %s", response));
+        writefln("nodes_from_response response: %s", response);
         response = response[1..$-2];
         char[][] spl = split(response,"},{");
         char[][] spl_n;
@@ -93,6 +114,10 @@ Node[] nodes_from_response(char[] response)
     return nodes;
 }
 
+/**
+    Returns a string (JSON) response formatted like
+    {"status":<status>[,"response":<response>]}.
+*/
 char[] response_as_json(bool success, char[] response = null, bool wrap_response = true)
 {
     char[] r = format("{\"status\":\"%s\"", ((success) ? OK : FAIL));
@@ -105,6 +130,10 @@ char[] response_as_json(bool success, char[] response = null, bool wrap_response
     return r;
 }
 
+/**
+    Sends msg to address.
+    Returns the response.
+*/
 char[] send_msg(char[] address, char[] msg)
 {
     Socket s = new TcpSocket();
@@ -134,6 +163,9 @@ char[] send_msg(char[] address, char[] msg)
     }
 }
 
+/**
+    Sends msg to each member of (servers - exclude).
+*/
 char[][] send_msg_all(char[][] servers, char[] exclude, char[] msg)
 {
     char[][] responses;

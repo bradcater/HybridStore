@@ -5,6 +5,7 @@ import dlib.file;
 import dlib.verbal;
 import std.string;
 
+
 char[][char[]] get_config(char[] configfile)
 {
     char[][char[]] config;
