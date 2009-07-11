@@ -115,8 +115,8 @@ Node[] nodes_from_response(char[] response)
 }
 
 /**
-    Returns a string (JSON) response formatted like
-    {"status":<status>[,"response":<response>]}.
+    Returns a string (JSON) response formatted with status and (possibly)
+    response attributes.
 */
 char[] response_as_json(bool success, char[] response = null, bool wrap_response = true)
 {

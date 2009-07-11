@@ -1,7 +1,7 @@
-/*
- * This code has been adapted from
- * http://svn.dsource.org/projects/freeuniverse/trunk/freeuniverse/arc/templates/redblacktree.d
- */
+/**
+    This code has been adapted from
+    http://svn.dsource.org/projects/freeuniverse/trunk/freeuniverse/arc/templates/redblacktree.d
+*/
 module dlib.rbtree;
 
 import dlib.config;
