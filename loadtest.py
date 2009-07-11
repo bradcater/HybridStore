@@ -15,7 +15,7 @@ def socket_send(msg,p):
     s.close()
     return resp
 
-TRIALS = 250000
+TRIALS = 500000
 METHODS = ('hybridstore','memcached','tokyocabinet','mysql')
 METHOD = METHODS[0]
 b = 30

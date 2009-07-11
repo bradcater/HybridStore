@@ -50,6 +50,8 @@ int set_numeric_range(char[] val, char[] name, int dephault)
 
 /**
     Automatically prune the tree on SET if tree.size > MAX_SIZE.
+    Pruning will slow performance of SET queries, but it is recommended unless
+    you can guarantee that the size of your keyset is bounded.
 */
 bool AUTO_PRUNE = true;
 
