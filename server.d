@@ -18,9 +18,10 @@ import std.thread;
 static import dlib.json;
 static import dlib.remote;
 
-/*
- * Aggregate a list of keys or key=value pairs into groups by their respective servers.
- */
+/**
+    Returns an aggregated list of keys or key=value pairs into groups by their
+    respective instances.
+*/
 private string[][char[]] _aggregate_keys(char[][] servers, char[][] keys)
 {
     string[][char[]] agg;
@@ -34,9 +35,9 @@ private string[][char[]] _aggregate_keys(char[][] servers, char[][] keys)
     return agg;
 }
 
-/*
- * Turn a list of AttrObjs into a string of key1=value1,key2=value2,...
- */
+/**
+    Returns a string of key1=value1,key2=value2,...
+*/
 private char[] _assemble_data(AttrObj[] aobjs)
 {
     char[] data;
@@ -47,10 +48,9 @@ private char[] _assemble_data(AttrObj[] aobjs)
     return data[0..$-1];
 }
 
-/*
- * If a key is like NUMERIC(key), then turn it into a double.
- * Otherwise, return double.min.
- */
+/**
+    Returns key as a double if it is wrapped in NUMERIC, double.min otherwise.
+*/
 private double _convert_key(char[] k)
 {
     if ((k.length > NUMERIC.length + 2) &&
@@ -65,9 +65,9 @@ private double _convert_key(char[] k)
     }
 }
 
-/*
- * Format a list of Nodes as JSON.
- */
+/**
+    Returns nodes as JSON.
+*/
 private char[] _format_nodes_as_json(Node[] nodes)
 {
     char[] resp;
@@ -82,9 +82,10 @@ private char[] _format_nodes_as_json(Node[] nodes)
     return format("{%s}", resp);
 }
 
-/*
- * Perform an operation on a local tree.
- */
+/**
+    Performs an operation on a local tree.
+    Returns the JSON response.
+*/
 private char[] _perform_local_op(RedBlackTree btree, int kind, char[] key, char[] value = null)
 {
     char[] resp = OK;
@@ -120,11 +121,11 @@ private char[] _perform_local_op(RedBlackTree btree, int kind, char[] key, char[
     return resp;
 }
 
-/*
- * Read the recordjar file f and send each bit of information to the appropriate
- * server based on its key.
- * Return a RedBlackTree that will exist locally.
- */
+/**
+    Reads the recordjar file f and send each bit of information to the
+    appropriate instance.
+    Returns a RedBlackTree that will exist locally.
+*/
 RedBlackTree buildRedBlackTrees(char[][] servers, char[] tree_name, char[] f, bool compress)
 {
     // load the data
@@ -172,6 +173,10 @@ RedBlackTree buildRedBlackTrees(char[][] servers, char[] tree_name, char[] f, bo
  * All handlers must return a JSON response.
  */
 
+/**
+    Handles DEL, GET, and SET queries.
+    Returns a JSON response.
+*/
 private char[] _handle_del_get_set(char[][] servers, RedBlackTree btree, char[] tree_name, char[] input, int kind, char[][] p)
 {
     char[] command = split(input," ")[0];
@@ -237,6 +242,10 @@ private char[] _handle_del_get_set(char[][] servers, RedBlackTree btree, char[] 
     }
 }
 
+/**
+    Handles ELECT queries.
+    Returns 0.
+*/
 private int _handle_elect(char[] query, Socket a)
 {
     // ELECT SERVER newmaster;
@@ -259,6 +268,10 @@ private int _handle_elect(char[] query, Socket a)
     return 0;
 }
 
+/**
+    Handles GET_R_L queries.
+    Returns a JSON response.
+*/
 private char[] _handle_get_r_l(char[][] servers, RedBlackTree btree, char[] tree_name, char[] input, int kind, char[][] p)
 {
     char[] resp;
@@ -299,6 +312,10 @@ private char[] _handle_get_r_l(char[][] servers, RedBlackTree btree, char[] tree
     return resp;
 }
 
+/**
+    Handles INFO and ALL queries.
+    Returns a JSON response.
+*/
 private char[] _handle_info_all(char[][] servers, RedBlackTree btree, char[] tree_name, char[] input, int kind, char[][] p)
 {
     char[] resp;
@@ -386,11 +403,12 @@ private char[] _handle_info_all(char[][] servers, RedBlackTree btree, char[] tre
     return resp;
 }
 
-/*
- * Respond to a simple input query.
- * If you are MASTER, then you get to decide to do the query or to pass it to another
- * server. All others must do the query.
- */
+/**
+    Responds to a simple input query.
+    If this instance is MASTER, then it decides whether to act on input or to
+    pass it to another instance.
+    If this instance is not MASTER, it must do the query.
+*/
 private int _respond_to_normal_query(char[][] servers, Socket a, char[] input, int kind, RedBlackTree[char[]]* trees)
 {
     char[] resp;
@@ -482,6 +500,11 @@ private int _respond_to_normal_query(char[][] servers, Socket a, char[] input, i
     return 0;
 }
 
+/**
+    The main loop for handling queries.
+    Returns an associative array of RedBlackTrees keyed by name.
+    Synchronization on trees should take place only in this function.
+*/
 private RedBlackTree[char[]] _response_handler(Socket a, char[] query, int kind, RedBlackTree[char[]] trees)
 {
     // do the special cases
@@ -597,6 +620,10 @@ private RedBlackTree[char[]] _response_handler(Socket a, char[] query, int kind,
     return trees;
 }
 
+/**
+    Maintain the list of common queries.
+    Use a separate thread to keep from blocking the response thread.
+*/
 private void _sync_maintain_queries(char[] query)
 {
     int f_queries()
@@ -611,6 +638,9 @@ private void _sync_maintain_queries(char[] query)
     queries_thread.run();
 }
 
+/**
+    The entrance to HybridStore.
+*/
 void main(char[][] args)
 {
     say(WELCOME,VERBOSITY,1);
