@@ -58,7 +58,7 @@ private double _convert_key(char[] k)
         (k[$-1..$] == ")"))
     {
         char[] t;
-        char[] a = k[NUMERIC.length+1..$-1] ~ [t[0]];
+        char[] a = k[NUMERIC.length+1..$-1] ~ t[0..0];
         return cast(double)atoi(a);
     } else {
         return double.min;
@@ -315,7 +315,10 @@ private char[] _handle_info_all(char[][] servers, RedBlackTree btree, char[] tre
         json_arr["size"] = format("%s", btree.getSize());
         json_arr["max"] = max;
         json_arr["min"] = min;
-        json_arr["common_queries"] = pretty_queries(STATS_COMMON_QUERIES);
+        if (TRACK_QUERIES)
+        {
+            json_arr["common_queries"] = pretty_queries(STATS_COMMON_QUERIES);
+        }
         char[][char[]] big_json_arr;
         big_json_arr[SERVER] = dlib.json.encode(json_arr);
         resp = dlib.json.encode(big_json_arr,false)[1..$-1];
@@ -594,6 +597,20 @@ private RedBlackTree[char[]] _response_handler(Socket a, char[] query, int kind,
     return trees;
 }
 
+private void _sync_maintain_queries(char[] query)
+{
+    int f_queries()
+    {
+    synchronized
+    {
+            maintain_queries(query);
+            return 0;
+        }
+    }
+    Thread queries_thread = new Thread(&f_queries);
+    queries_thread.run();
+}
+
 void main(char[][] args)
 {
     say(WELCOME,VERBOSITY,1);
@@ -617,7 +634,10 @@ void main(char[][] args)
         if (is_query(query))
         {
             // maintain the query stats
-            maintain_queries(query);
+            if (TRACK_QUERIES)
+            {
+                _sync_maintain_queries(query);
+            }
             int kind = query_kind(query);
             if (kind == K.EXIT) {
                 // kill all other servers first

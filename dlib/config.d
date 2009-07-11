@@ -55,6 +55,9 @@ const char[] NUMERIC = "NUMERIC";
 // the number of most frequent queries to maintain
 int QUERY_COUNT = 10;
 
+// to track common queries, or not
+bool TRACK_QUERIES = true;
+
 /*
  * MESSAGES
  */

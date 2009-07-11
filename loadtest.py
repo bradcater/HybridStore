@@ -23,11 +23,11 @@ b = 30
 start = time.time()
 
 if METHOD == 'hybridstore':
-    msg = "CREATE TREE test;"
-    socket_send(msg,PORT)
+    #msg = "CREATE TREE test;"
+    #socket_send(msg,PORT)
     for i in xrange(0,TRIALS,b):
-        msg = "SET %s IN test;" % ",".join([ "%d=%d" % (j,j) for j in xrange(i,i+b) ])
-        #msg = "GET %s FROM test;" % ",".join([ "%d" % j for j in xrange(i,i+b) ])
+        #msg = "SET %s IN test;" % ",".join([ "%d=%d" % (j,j) for j in xrange(i,i+b) ])
+        msg = "GET %s FROM test;" % ",".join([ "%d" % j for j in xrange(i,i+b) ])
         #msg = "GET %d FROM test RANGE %d;" % (i,i+b)
         resp = socket_send(msg,PORT)
     #socket_send("DROP TREE test;",PORT)

@@ -8,15 +8,16 @@ import dlib.stats;
 import dlib.verbal;
 import std.string;
 
-private void _arg_true_false(bool var, char[] c, char[] val)
+private bool _arg_true_false(char[] c, char[] val, bool dephault)
 {
     if (val == "true")
     {
-        var = true;
+        return true;
     } else if (val == "false") {
-        var = false;
+        return false;
     } else {
         arg_error(c,val);
+        return dephault;
     }
 }
 
@@ -47,13 +48,13 @@ void process_args(char[][] args)
         switch (c)
         {
             case "auto_prune":
-                _arg_true_false(AUTO_PRUNE,c,val);
+                AUTO_PRUNE = _arg_true_false(c,val,AUTO_PRUNE);
                 break;
             case "compression_level":
                 COMPRESSION_LEVEL = set_numeric_range(val,"compression_level",COMPRESSION_LEVEL);
                 break;
             case "master":
-                _arg_true_false(MASTER,c,val);
+                MASTER = _arg_true_false(c,val,MASTER);
                 break;
             case "max_size":
                 try
@@ -115,7 +116,10 @@ void process_args(char[][] args)
                 }
                 break;
             case "strict_syntax":
-                _arg_true_false(STRICT_SYNTAX,c,val);
+                STRICT_SYNTAX = _arg_true_false(c,val,STRICT_SYNTAX);
+                break;
+            case "track_queries":
+                TRACK_QUERIES = _arg_true_false(c,val,TRACK_QUERIES);
                 break;
             case "verbosity":
                 VERBOSITY = set_numeric_range(val,"verbosity",VERBOSITY);
