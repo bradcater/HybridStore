@@ -40,7 +40,6 @@ class RedBlackTree
         if (STRICT_TREES)
         {
             isValid();
-            print();
         }
         return true;
     }
@@ -53,7 +52,6 @@ class RedBlackTree
         if (STRICT_TREES)
         {
             isValid();
-            print();
         }
         return true;
     }
@@ -70,7 +68,6 @@ class RedBlackTree
         if (STRICT_TREES)
         {
             isValid();
-            print();
         }
         return true;
     }
@@ -87,7 +84,6 @@ class RedBlackTree
         if (STRICT_TREES)
         {
             isValid();
-            print();
         }
         return true;
     }
@@ -315,7 +311,11 @@ class RedBlackTree
                     {
                         done = 1;
                     } else if (isRed(save)) {
-                        //save.red = 0;
+                        /*
+                         * This used to be here, but I don't think that it should be.
+                         * Any black violations will make me reconsider.
+                         * save.red = 0;
+                         */
                         done = 1;
                     }
                     delete node;

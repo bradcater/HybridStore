@@ -13,17 +13,26 @@ char[] CONFIG_FILE = "hybridstore.conf";
  * FUNCTIONS
  */
 
+/**
+    Prints an error message to stdout if arg is not recognized.
+*/
 void arg_error(char[] arg, char[] val)
 {
     say(format("Unrecognized value %s for argument %s.", val, arg),VERBOSITY,1);
 }
 
+/**
+    Returns true if val is on [0,9], false otherwise.
+*/
 bool numeric_range(char[] val)
 {
     return (val == "0" || val == "1" || val == "2" || val == "3" || val == "4" ||
             val == "5" || val == "6" || val == "7" || val == "8" || val == "9");
 }
 
+/**
+    Returns val as an integer if possible, dephaults otherwise.
+*/
 int set_numeric_range(char[] val, char[] name, int dephault)
 {
     if (numeric_range(val))
@@ -39,108 +48,205 @@ int set_numeric_range(char[] val, char[] name, int dephault)
  * MEMORY
  */
 
-// do auto-prune the tree on SET if the size > MAX_SIZE
+/**
+    Automatically prune the tree on SET if tree.size > MAX_SIZE.
+*/
 bool AUTO_PRUNE = true;
 
-// the level of compression to use
-// must be in range [0,9]
+/**
+    The level of compression to use when writing data to file.
+    Must be on [0,9].
+    Higher compression levels require more time but use less space.
+*/
 int COMPRESSION_LEVEL = 9;
 
-// the maximum number of tree nodes before auto_pruning
+/**
+    The maximum number of nodes before automatically pruning the tree.
+*/
 int MAX_SIZE = 1000000;
 
-// the name of the numeric type
+/**
+    The keyword for the numeric type.
+    For example, if NUMERIC = "FOO", then the key "100" will be treated as a
+    string, but the key "FOO(100)" will use the number 100 as the key.
+*/
 const char[] NUMERIC = "NUMERIC";
 
-// the number of most frequent queries to maintain
+/**
+    The number of frequent queries to maintain if TRACK_QUERIES is true.
+    Tracking more queries requires more time (and space).
+*/
 int QUERY_COUNT = 10;
 
-// to strictly check tree integrity
+/**
+    Strictly check tree integrity against the red-black tree representation
+    invariant on every SET and DEL if true.
+*/
 bool STRICT_TREES = true;
 
-// to track common queries, or not
+/**
+    To track common queries.
+    Tracking queries will slow query reading.
+*/
 bool TRACK_QUERIES = true;
 
 /*
  * MESSAGES
  */
 
-// how much info to print to the screen
-// 9 is most, 1 is least, 0 is none
+/**
+    How much info to print to stdout.
+    9 is most, 0 is none.
+    Must be on [0,9].
+*/
 int VERBOSITY = 9;
 
-// the bad query message
+/**
+    The bad query message.
+    Printed to stdout if a query is ill-formatted (but in an otherwise
+    non-specific way).
+*/
 const char[] BAD_QUERY = "BAD QUERY.";
 
-// the bad query E_GET_KEYS message
+/**
+    The bad query E_GET_KEYS message.
+    Printed to stdout if a DEL or GET query has an invalid key(s).
+*/
 const char[] BAD_QUERY_E_DEL_GET_KEYS = "The given key(s) is invalid.";
 
-// the bad query E_SET_PAIRS message
+/**
+    The bad query E_SET_PAIRS message.
+    Printed to stdout if a SET query has an invalid key->value pair(s).
+*/
 const char[] BAD_QUERY_E_SET_PAIRS = "The given key->value pair(s) is invalid.";
 
-// the failure message
+/**
+    The failure message.
+*/
 const char[] FAIL = "Failure.";
 
-// the invalid file message
+/**
+    The invalid file message.
+    Given as a response when a requested input file is not valid.
+*/
 const char[] INVALID_FILE = "That is not a valid file.";
 
-// the invalid state message
+/**
+    The invalid state message.
+    Given as a response when the tree enters an invalid state.
+*/
 const char[] INVALID_STATE = "We are in an invalid state.";
 
-// the invalid tree message
+/**
+    The invalid tree message.
+    Given when a requested tree is not valid.
+*/
 const char[] INVALID_TREE = "That is not a valid tree.";
 
-// the success response message
+/**
+    The success message.
+    Given when an operation has been successful.
+*/
 const char[] OK = "Ok.";
 
-// the not ok message
+/**
+    The not ok message.
+    Given when something is not successful.
+*/
 const char[] NOT_OK = "NOT OK.";
 
-// the not found message
+/**
+    The not found message.
+    Given when a key in a GET query is not found.
+*/
 const char[] NULL = "NULL.";
 
-// the ping response message
+/**
+    The ping response message.
+    Given in response to a PING query.
+*/
 const char[] PONG = "PONG.";
 
-// the unavailable message
+/**
+    The unavailable message.
+    Given when an instance has become unavailable.
+*/
 const char[] UNAVAILABLE = "Unavailable.";
 
-// the unimplemented message
+/**
+    The unimplemented message.
+    Given when a query has been given for an unimplemented query type.
+*/
 const char[] UNIMPLEMENTED = "Unimplemented query type. No action was taken.";
 
-// the unrecognized query message
+/**
+    The unrecognized query message.
+    Given when a query (superficially) looks correct but cannot be recognized.
+*/
 const char[] UNRECOGNIZED = "Query seems well-formed, but it is unrecognized.";
 
-// the welcome message
+/**
+    The welcome message.
+    Printed to stdout upon starting HybridStore.
+*/
 const char[] WELCOME = "Welcome to HybridStore.";
 
 /*
  * NETWORK
  */
 
-// the size of the buffer to allocate to receive messages
+/**
+    The size of the buffer to allocate to receive messages.
+*/
 const int BUFFER_SIZE = 16384;
 
-// the default port to use
+/**
+    The default port to use.
+*/
 ushort PORT = 41111;
 
-// if true, this is the master
+/**
+    If true, this is the master.
+    Only one instance may be master.
+*/
 bool MASTER = true;
 
-// the servers to use
+/**
+    This server.
+*/
 char[] SERVER = "localhost";
+
+/**
+    The available instances.
+    Listing an instance twice has the same effect as doubling its weight.
+*/
 char[][] SERVER_POOL = ["localhost","localhost:51111","10.0.1.115:51111"];
+
+/**
+    The weights to use for distributing keys to instances. An instance with a
+    weight of 2 should receive approximately twice as many keys as an instance
+    with a weight of 1.
+*/
 int[] SERVER_WEIGHTS = [2,1,1];
+
+/**
+    The dead instances.
+*/
 int[] DEAD_SERVERS;
 
-// the count of unique servers (since we duplicate them for weighting)
+/**
+    The count of unique instances (since we duplicate them for weighting).
+*/
 int SERVER_COUNT;
 
 /*
  * SYNTAX
  */
 
-// to make strict checks on input queries
+/**
+    To make strict checks on input queries.
+    This will slow down query parsing markedly.
+*/
 bool STRICT_SYNTAX = true;
 
 unittest {
