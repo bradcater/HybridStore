@@ -5,17 +5,33 @@ import dlib.file;
 import dlib.verbal;
 import std.string;
 
+/**
+    An AttrObj is a thin wrapper around an associative array.
+*/
 class AttrObj
 {
+    /**
+        The attributes contained by this AttrObj.
+    */
     private char[][char[]] attrs;
+    /**
+        Add the pair name->value to this.
+    */
     void addAttr(char[] name, char[] value)
     {
         attrs[name] = value;
     }
+    /**
+        Returns true if this has no attributes, false otherwise.
+    */
     bool empty()
     {
         return (attrs.length == 0);
     }
+    /**
+        Returns the value associated with the attribute name if it exists.
+        Returns an empty array otherwise.
+    */
     char[] getAttr(char[] name)
     {
         try
@@ -27,6 +43,9 @@ class AttrObj
             return [];
         }
     }
+    /**
+        Returns a string of the values of attr1 and attr2 joined by sep.
+    */
     char[] joinAttrs(char[] attr1, char[] attr2, char[] sep)
     {
         return format("%s%s%s", this.getAttr(attr1), sep, this.getAttr(attr2));
@@ -41,6 +60,10 @@ class AttrObj
     }
 }
 
+/**
+    Returns an array of AttrObjs listed in f.
+    If compress is true, f will be decompressed before building the array.
+*/
 AttrObj[] gatherObjs(char[] f, bool compress)
 {
     AttrObj ao = new AttrObj();

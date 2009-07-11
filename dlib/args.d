@@ -8,6 +8,10 @@ import dlib.stats;
 import dlib.verbal;
 import std.string;
 
+/**
+    Returns true if val is "true", false if val is "false", dephault otherwise.
+    If val is neither "true" nor "false", an error message is written to stdout.
+*/
 private bool _arg_true_false(char[] c, char[] val, bool dephault)
 {
     if (val == "true")
@@ -21,9 +25,13 @@ private bool _arg_true_false(char[] c, char[] val, bool dephault)
     }
 }
 
-/*
- * Process all of the command-line arguments along with the conf file.
- */
+/**
+    Processes all of the command-line arguments and the conf file.
+    If config_file is given, it will be used as the configuration file instead
+    of the default configuration file.
+    The values of command-line arguments will supercede those found in whichever
+    configuration file is used.
+*/
 void process_args(char[][] args)
 {
     char[][char[]] cl_args;

@@ -6,6 +6,10 @@ import std.string;
 static import std.file;
 static import std.zlib;
 
+/**
+    Returns the contents of f.
+    If compress is true, this will uncompress the data after reading.
+*/
 string[] read_file(char[] f, bool compress = false)
 {
     if (std.file.exists(f) != 0)
@@ -25,6 +29,10 @@ string[] read_file(char[] f, bool compress = false)
     }
 }
 
+/**
+    Writes data to f.
+    If compress is true, it will compress the data before writing.
+*/
 void write_file(char[] f, char[] data, bool compress = false)
 {
     if (std.file.exists(f) != 0)
@@ -40,18 +48,27 @@ void write_file(char[] f, char[] data, bool compress = false)
     }
 }
 
+/**
+    Returns data in compressed form.
+*/
 ubyte[] z_compress(char[] data)
 {
     ubyte[] beforeCompression = cast(ubyte[])data;
     return cast(ubyte[])std.zlib.compress(cast(void[])beforeCompression,COMPRESSION_LEVEL);
 }
 
+/**
+    Returns src in uncompressed form.
+*/
 char[] z_decompress(ubyte[] src)
 {
     ubyte[] afterDecompression = cast(ubyte[])std.zlib.uncompress(cast(void[])src);
     return _array_reconcile(afterDecompression);
 }
 
+/**
+    Returns array as characters.
+*/
 private char[] _array_reconcile(ubyte[] array)
 {
     char[] data;

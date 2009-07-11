@@ -7,6 +7,9 @@ import std.string;
  * Everything in this module is something that should be included in D.
  */
 
+/**
+    Returns true if elm is in arr, false otherwise.
+*/
 bool array_contains(char[] arr, char[] elm)
 {
     foreach (a; arr)
@@ -19,6 +22,9 @@ bool array_contains(char[] arr, char[] elm)
     return false;
 }
 
+/**
+    Returns true if elm is in arr, false otherwise.
+*/
 bool array_contains(char[][] arr, char[] elm)
 {
     foreach (a; arr)
@@ -31,6 +37,9 @@ bool array_contains(char[][] arr, char[] elm)
     return false;
 }
 
+/**
+    Returns true if elm is in arr, false otherwise.
+*/
 bool array_contains(int[] arr, int elm)
 {
     foreach (a; arr)
@@ -43,6 +52,9 @@ bool array_contains(int[] arr, int elm)
     return false;
 }
 
+/**
+    Returns arr - elm, but only the first instance of elm.
+*/
 int[] array_remove(int[] arr, int elm)
 {
     for (int i=0; i<arr.length; i++)
@@ -55,6 +67,9 @@ int[] array_remove(int[] arr, int elm)
     return arr;
 }
 
+/**
+    Returns the index of elm in arr if elm is in arr, -1 otherwise.
+*/
 int index_of(char[][] arr, char[] elm)
 {
     for (int i=0; i<arr.length; i++)
@@ -67,6 +82,9 @@ int index_of(char[][] arr, char[] elm)
     return -1;
 }
 
+/**
+    Returns the md5 hex digest of a.
+*/
 char[] md5_hex_digest(char[] a)
 {
     ubyte digest[16];
@@ -77,6 +95,11 @@ char[] md5_hex_digest(char[] a)
     return digestToString(digest);
 }
 
+/**
+    Returns a list of the elements of str separated by delim.
+    If delim occurs more than n times, the last element in the returned array
+    will be the remainder of str after the first n splits.
+*/
 char[][] splitn(char[] str, char[] delim, int n)
 {
     if (n <= 0)

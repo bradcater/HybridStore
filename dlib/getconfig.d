@@ -5,7 +5,9 @@ import dlib.file;
 import dlib.verbal;
 import std.string;
 
-
+/**
+    Returns an associative array of configuration directives from configfile.
+*/
 char[][char[]] get_config(char[] configfile)
 {
     char[][char[]] config;
