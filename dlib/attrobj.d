@@ -27,12 +27,17 @@ class AttrObj
             return [];
         }
     }
+    char[] joinAttrs(char[] attr1, char[] attr2, char[] sep)
+    {
+        return format("%s%s%s", this.getAttr(attr1), sep, this.getAttr(attr2));
+    }
     unittest {
         AttrObj ao = new AttrObj();
         ao.addAttr("key","mykey");
         ao.addAttr("value","myvalue");
         assert(ao.getAttr("key") == "mykey", "AttrObj failed property lookup.");
         assert(ao.getAttr("value") == "myvalue", "AttrObj failed property lookup.");
+        assert(ao.joinAttrs("key","value","=") == "mykey=myvalue", "AttrObj failed property join.");
     }
 }
 

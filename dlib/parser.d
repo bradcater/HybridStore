@@ -52,15 +52,7 @@ bool is_query(char[] query)
 
 int query_kind(char[] query)
 {
-    if (is_ping(query)) {
-        return K.PING;
-    } else if (is_create(query)) {
-        return K.CREATE;
-    } else if (is_load(query)) {
-        return K.LOAD;
-    } else if (is_load_compressed(query)) {
-        return K.LOAD_C;
-    } else if (is_set(query)) {
+    if (is_set(query)) {
         return K.SET;
     } else if (is_get(query)) {
         return K.GET;
@@ -70,6 +62,14 @@ int query_kind(char[] query)
         return K.GET_R_L;
     } else if (is_del(query)) {
         return K.DEL;
+    } else if (is_ping(query)) {
+        return K.PING;
+    } else if (is_create(query)) {
+        return K.CREATE;
+    } else if (is_load(query)) {
+        return K.LOAD;
+    } else if (is_load_compressed(query)) {
+        return K.LOAD_C;
     } else if (is_info(query)) {
         return K.INFO;
     } else if (is_all(query)) {

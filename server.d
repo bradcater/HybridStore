@@ -28,12 +28,8 @@ private string[][char[]] _aggregate_keys(char[][] servers, char[][] keys)
     foreach (k; keys)
     {
         spl = split(k,"=");
-        if (spl.length == 1)
-        {
-            agg[dlib.remote.choose_server(servers,k)] ~= [k];
-        } else {
-            agg[dlib.remote.choose_server(servers,spl[0])] ~= [k];
-        }
+        // Since key always comes before value, we can always use spl[0].
+        agg[dlib.remote.choose_server(servers,spl[0])] ~= [k];
     }
     return agg;
 }
@@ -46,7 +42,7 @@ private char[] _assemble_data(AttrObj[] aobjs)
     char[] data;
     foreach (ao; aobjs)
     {
-        data = format("%s=%s,%s", ao.getAttr("key"), ao.getAttr("value"), data);
+        data = format("%s,%s", ao.joinAttrs("key","value","="), data);
     }
     return data[0..$-1];
 }
@@ -62,7 +58,7 @@ private double _convert_key(char[] k)
         (k[$-1..$] == ")"))
     {
         char[] t;
-        char[] a = k[NUMERIC.length+1..$-1] ~ t[0..0];
+        char[] a = k[NUMERIC.length+1..$-1] ~ [t[0]];
         return cast(double)atoi(a);
     } else {
         return double.min;

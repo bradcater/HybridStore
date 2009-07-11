@@ -95,8 +95,7 @@ Node[] nodes_from_response(char[] response)
 
 char[] response_as_json(bool success, char[] response = null, bool wrap_response = true)
 {
-    char[] success_str = (success) ? OK : FAIL;
-    char[] r = format("{\"status\":\"%s\"",success_str);
+    char[] r = format("{\"status\":\"%s\"", ((success) ? OK : FAIL));
     if (response)
     {
         r = (wrap_response) ? format("%s,\"response\":\"%s\"}", r, response) : format("%s,\"response\":%s}", r, response);
