@@ -1,0 +1,150 @@
+.TH hybridstored 1  "July 12, 2009" "version 0.1" "USER COMMANDS"
+."""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.SH NAME
+hybridstored \- a high\-performance memory object caching system
+."""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.SH SYNOPSIS
+.B hybridstored
+[options]
+."""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.SH DESCRIPTION
+This manual page documents briefly the
+.B hybridstored
+memory object caching system.
+.PP
+.B HybridStore
+is a fast, distributed, highly-scalable, fault-tolerant, semi-persistent object
+caching system designed to increase application performance by storing (in
+memory) objects that would otherwise require significant time or resources to
+generate. Since applications are often limited by database performance, the
+result of limiting database queries is better application performance.
+.PP
+HybridStore is implemented such that each instance (possibly on the same
+machine) in a cluster maintains a red-black tree of objects allocated by key.
+Thus, in the case of instance failure, most of the cluster's objects remain
+intact.
+."""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.SH OPTIONS
+All command-line options are given as var=val.
+
+.TP
+.B auto_prune
+If true, each instance will hold at most
+.I max_size
+objects and will replace the oldest found object on SET of the
+.I max_size
++ 1 object. Otherwise, the tree will grow without bound. Allowed values are
+.I true
+and
+.IR false .
+
+.TP
+.B compression_level
+Data is automatically compressed before SET (and decompressed after GET). Higher
+values of
+.I compression_level
+require more time for compression and decompression but consume less memory.
+Allowed values are on
+.IR [0,9] .
+
+.TP
+.B master
+If true, this instance is the master. Otherwise, this instance is a slave.
+Allowed values are
+.I true
+and
+.IR false .
+
+.TP
+.B max_size
+Only
+.I max_size
+objects will be allocated to each instance; thereafter, the tree will be pruned
+by removing the oldest available element before the next SET. This has no
+effect if
+.I auto_prune
+is false. Allowed values are positive integers.
+
+.TP
+.B port
+Defines the port to listen on. Allowed values are positive integers.
+
+.TP
+.B query_count
+Defines the number of most-common queries to track. This has no effect if
+.I track_queries
+is false. Allowed values are positive integers.
+
+.TP
+.B server
+Defines which instance from
+.I server_pool
+is this particular instance. Allowed values are of the form ip:port.
+
+.TP
+.B server_pool
+Defines the instances in this cluster. This has no effect if
+.I master
+is false. Allowed values are comma-separated instances of the same form as in
+.IR server .
+
+.TP
+.B server_weights
+An instance with a weight of 2 will receive approximately twice as many objects
+as an instance with a weight of 1. This has no effect if
+.I master
+is false. Allowed values are comma-separated positive integers.
+
+.TP
+.B strict_syntax
+If this is true, queries will be checked for correctness more rigorously before
+they are executed. Allowed values are
+.I true
+and
+.IR false .
+
+.TP
+.B strict_trees
+If this is true, instances will be checked for valid state upon each SET or DEL.
+Allowed values are
+.I true
+and
+.IR false .
+
+.TP
+.B track_queries
+If this is true, a list of
+.I query_count
+most-common queries will be maintained. Allowed values are
+.I true
+and
+.IR false .
+
+.TP
+.B verbosity
+Higher values will be more verbose. Allowed values are on
+.IR [0,9] .
+."""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+." .SH EXAMPLES
+." .TP
+." Set the maximum speed to 8 speed cdrom:
+." .B cdspeed
+." \-s 8
+." .PP
+." .TP
+." Restore maximum speed:
+." .B cdspeed
+." \-s 0
+." .PP
+
+.SH LICENSE
+HybridStore is copyright Brad Cater and is distributed under the LGPL license.
+
+.SH SEE ALSO
+The README file that is distributed with HybridStore, as well as the included
+documentation.
+.B http://hybridstore.bradcater.webfactional.com
+
+.SH AUTHOR
+HybridStore was written by Brad Cater
+.BR <bradcater@gmail.com> .
