@@ -1,7 +1,7 @@
-.TH hybridstored 1  "July 12, 2009" "version 0.1" "USER COMMANDS"
+.TH HybridStore 1  "July 12, 2009" "version 0.1" "USER COMMANDS"
 ."""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .SH NAME
-hybridstored \- a high\-performance memory object caching system
+HybridStore \- a high\-performance memory object caching system
 ."""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .SH SYNOPSIS
 .B hybridstored
@@ -9,7 +9,7 @@ hybridstored \- a high\-performance memory object caching system
 ."""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .SH DESCRIPTION
 This manual page documents briefly the
-.B hybridstored
+.B HybridStore
 memory object caching system.
 .PP
 .B HybridStore
@@ -46,6 +46,12 @@ values of
 require more time for compression and decompression but consume less memory.
 Allowed values are on
 .IR [0,9] .
+
+.TP
+.B config_file
+Read this file instead of the default configuration file. Note that even if this
+is given, command-line arguments supercede any values listed in the given file.
+Allowed values are absolute or relative paths.
 
 .TP
 .B master
@@ -125,17 +131,20 @@ and
 Higher values will be more verbose. Allowed values are on
 .IR [0,9] .
 ."""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-." .SH EXAMPLES
-." .TP
-." Set the maximum speed to 8 speed cdrom:
-." .B cdspeed
-." \-s 8
-." .PP
-." .TP
-." Restore maximum speed:
-." .B cdspeed
-." \-s 0
-." .PP
+.SH EXAMPLES
+.TP
+.B \./hybridstored config_file=my_config.conf
+Run HybridStore using the directives listed in my_config.conf.
+
+.TP
+.B \./hybridstored master=true server=localhost:41111
+Run HybridStore with this instance operating on port 41111 at localhost as the
+master.
+
+.TP
+.B \./hybridstored config_file=my_config.conf port=51111
+Run HybridStore using the directives listed in my_config.conf, but listen on
+port 51111 regardless of which port is specified in my_config.conf.
 
 .SH LICENSE
 HybridStore is copyright Brad Cater and is distributed under the LGPL license.
