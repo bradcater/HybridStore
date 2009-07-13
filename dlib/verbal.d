@@ -13,7 +13,7 @@ import std.stdio;
 */
 void say(char[] msg, int activelevel, int requiredlevel)
 {
-    if (activelevel >= requiredlevel)
+    if (activelevel > requiredlevel)
     {
         writefln(msg);
     }

@@ -133,7 +133,10 @@ void process_args(char[][] args)
                 TRACK_QUERIES = _arg_true_false(c,val,TRACK_QUERIES);
                 break;
             case "verbosity":
-                VERBOSITY = set_numeric_range(val,"verbosity",VERBOSITY);
+                // We want to subtract 1 here so that when we test for
+                // sufficiently high verbosity in verbal.say(), we can test with
+                // > instead of >=.
+                VERBOSITY = set_numeric_range(val,"verbosity",VERBOSITY) - 1;
                 break;
             default:
                 say(format("Unrecognized configuration directive \"%s = %s\".", c, config[c]),VERBOSITY,1);
