@@ -205,7 +205,7 @@ const int BUFFER_SIZE = 8192;
 /**
     The default port to use.
 */
-ushort PORT = 41111;
+ushort HSPORT = 41111;
 
 /**
     If true, this is the master.
@@ -253,7 +253,7 @@ bool STRICT_SYNTAX = true;
 
 unittest {
     assert(BUFFER_SIZE > 0,"BUFFER_SIZE must be positive.");
-    assert(PORT > 0,"PORT must be positive.");
+    assert(HSPORT > 0,"PORT must be positive.");
     assert(COMPRESSION_LEVEL > 0 && COMPRESSION_LEVEL < 10,"COMPRESSION_LEVEL must be positive and less than 10.");
     assert(MAX_SIZE > 0,"MAX_SIZE must be positive.");
     assert(QUERY_COUNT >= 0,"QUERY_COUNT must be non-negative.");

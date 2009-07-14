@@ -1,5 +1,6 @@
 module dlib.remote;
 
+import dlib.attrobj;
 import dlib.config;
 import dlib.core;
 import dlib.rbtree;
@@ -9,6 +10,36 @@ import std.socket;
 import std.socketstream;
 import std.stdio;
 import std.string;
+
+/**
+    Returns an aggregated list of keys or key=value pairs into groups by their
+    respective instances.
+*/
+string[][char[]] aggregate_keys(char[][] servers, char[][] keys)
+{
+    string[][char[]] agg;
+    char[][] spl;
+    foreach (k; keys)
+    {
+        spl = split(k,"=");
+        // Since key always comes before value, we can always use spl[0].
+        agg[choose_server(servers,spl[0])] ~= [k];
+    }
+    return agg;
+}
+
+/**
+    Returns a string of key1=value1,key2=value2,...
+*/
+char[] assemble_data(AttrObj[] aobjs)
+{
+    char[] data;
+    foreach (ao; aobjs)
+    {
+        data = format("%s,%s", ao.joinAttrs("key","value","="), data);
+    }
+    return data[0..$-1];
+}
 
 /**
     Closes a if it is not already closed.
@@ -142,7 +173,7 @@ char[] send_msg(char[] address, char[] msg)
     ushort p;
     if (spl.length == 1)
     {
-        p = PORT;
+        p = HSPORT;
     } else {
         p = cast(ushort)atoi(spl[1]);
     }

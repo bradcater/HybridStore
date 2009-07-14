@@ -50,6 +50,23 @@ enum K
 }
 
 /**
+    Returns key as a double if it is wrapped in NUMERIC, double.min otherwise.
+*/
+double convert_key(char[] k)
+{
+    if ((k.length > NUMERIC.length + 2) &&
+        (k[0..NUMERIC.length + 1] == format("%s(", NUMERIC)) &&
+        (k[$-1..$] == ")"))
+    {
+        char[] t;
+        char[] a = k[NUMERIC.length+1..$-1] ~ t[0..0];
+        return cast(double)atoi(a);
+    } else {
+        return double.min;
+    }
+}
+
+/**
     Returns true if query appears to be a proper query, false otherwise.
 */
 bool is_query(char[] query)

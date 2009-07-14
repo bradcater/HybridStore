@@ -1,6 +1,7 @@
 module json.d;
 
 import dlib.core;
+import dlib.rbtree;
 import std.stdio;
 import std.string;
 
@@ -69,6 +70,23 @@ char[] encode(char[][char[]] arr, bool wrap_vals = true)
         json = format("\"%s\":%s,%s", key, v, json);
     }
     return format("{%s}", json[0..$-1]);
+}
+
+/**
+    Returns nodes as JSON.
+*/
+char[] format_nodes_as_json(Node[] nodes)
+{
+    char[] resp;
+    foreach (n; nodes)
+    {
+        resp = format("%s,%s", node_info_short(n), resp);
+    }
+    if (resp.length > 0)
+    {
+        resp = resp[0..$-1];
+    }
+    return format("{%s}", resp);
 }
 
 /**

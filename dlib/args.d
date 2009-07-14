@@ -82,7 +82,7 @@ void process_args(char[][] args)
                 try
                 {
                     ushort p = cast(ushort)atoi(val);
-                    PORT = p;
+                    HSPORT = p;
                 } catch (Exception e) {
                     arg_error(c,val);
                 }
