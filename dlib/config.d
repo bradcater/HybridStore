@@ -112,15 +112,21 @@ const char[] BAD_QUERY = "BAD QUERY.";
 
 /**
     The bad query E_GET_KEYS message.
-    Printed to stdout if a DEL or GET query has an invalid key(s).
+    Given as a response if a DEL or GET query has an invalid key(s).
 */
 const char[] BAD_QUERY_E_DEL_GET_KEYS = "The given key(s) is invalid.";
 
 /**
     The bad query E_SET_PAIRS message.
-    Printed to stdout if a SET query has an invalid key->value pair(s).
+    Given as a response if a SET query has an invalid key->value pair(s).
 */
 const char[] BAD_QUERY_E_SET_PAIRS = "The given key->value pair(s) is invalid.";
+
+/**
+    The E_CREATE_TREE_EXISTS message.
+    Given if a CREATE query has attempts to create a tree that already exists.
+*/
+const char[] E_CREATE_TREE_EXISTS = "A tree by that name already exists.";
 
 /**
     The failure message.

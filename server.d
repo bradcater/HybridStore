@@ -140,36 +140,41 @@ private RedBlackTree[char[]] _response_handler(Socket a, char[] query, int kind,
     switch (kind)
     {
         case K.CREATE:
-            synchronized
+            char[][] p = params(query,6);
+            char[] tree_name = p[1];
+            if (array_contains(_trees.keys,tree_name))
             {
+                a.send(dlib.remote.response_as_json(false,E_CREATE_TREE_EXISTS));
+            } else {
                 if (MASTER)
                 {
                     char[][] responses = dlib.remote.send_msg_all(SERVER_POOL,SERVER,query);
                 }
-                char[][] p = params(query,6);
-                char[] tree_name = p[1];
-                _trees[tree_name] = new RedBlackTree();
+                synchronized
+                {
+                    _trees[tree_name] = new RedBlackTree();
+                }
                 a.send(dlib.remote.response_as_json(true));
                 dlib.remote.close_if_alive(a);
             }
             break;
         case K.LOAD, K.LOAD_C:
-            synchronized
+            // LOAD mytree FROM myfile [COMPRESSED];
+            if (MASTER)
             {
-                // LOAD mytree FROM myfile [COMPRESSED];
-                if (MASTER)
+                char[][] p = params(query,4);
+                char[] file_name = p[2];
+                if (std.file.exists(file_name))
                 {
-                    char[][] p = params(query,4);
-                    char[] file_name = p[2];
-                    if (std.file.exists(file_name))
+                    char[] tree_name = p[0];
+                    RedBlackTree t = buildRedBlack_trees(SERVER_POOL, tree_name, file_name, kind == K.LOAD_C);
+                    synchronized
                     {
-                        char[] tree_name = p[0];
-                        RedBlackTree t = buildRedBlack_trees(SERVER_POOL, tree_name, file_name, kind == K.LOAD_C);
                         _trees[tree_name] = t;
-                        a.send(dlib.remote.response_as_json(true));
-                    } else {
-                        a.send(dlib.remote.response_as_json(false,INVALID_FILE));
                     }
+                    a.send(dlib.remote.response_as_json(true));
+                } else {
+                a.send(dlib.remote.response_as_json(false,INVALID_FILE));
                 }
             }
             dlib.remote.close_if_alive(a);
@@ -185,22 +190,22 @@ private RedBlackTree[char[]] _response_handler(Socket a, char[] query, int kind,
             response_thread.run();
             break;
         case K.DROP:
-            synchronized
+            // DROP TREE mytree;
+            if (MASTER)
             {
-                // DROP TREE mytree;
-                if (MASTER)
-                {
-                    char[][] responses = dlib.remote.send_msg_all(SERVER_POOL,SERVER,query);
-                }
-                char[][] p = params(query,4);
-                char[] tree_name = p[1];
-                if (tree_name in _trees)
+                char[][] responses = dlib.remote.send_msg_all(SERVER_POOL,SERVER,query);
+            }
+            char[][] p = params(query,4);
+            char[] tree_name = p[1];
+            if (tree_name in _trees)
+            {
+                synchronized
                 {
                     _trees.remove(tree_name);
-                    a.send(dlib.remote.response_as_json(true));
-                } else {
-                    a.send(dlib.remote.response_as_json(false,INVALID_TREE));
                 }
+                a.send(dlib.remote.response_as_json(true));
+            } else {
+                a.send(dlib.remote.response_as_json(false,INVALID_TREE));
             }
             dlib.remote.close_if_alive(a);
             break;
