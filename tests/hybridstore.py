@@ -62,7 +62,6 @@ class HybridStore:
     
     def _eval_response(self,r):
         #print '_eval_response r',r
-        r = r.replace("NULL.",'"NULL."')
         try:
             json = decode(r)
         except DecodeError:
@@ -73,6 +72,7 @@ class HybridStore:
             p = re.compile('\{(\d+)\:')
             for m in p.finditer(r):
                 r = r.replace(m.group(0),'{"n%s":' % m.group(1))
+            #print '_eval_response r modified',r
             json = decode(r)
         if json.get('status') == 'Ok.':
             d = {}

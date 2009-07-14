@@ -653,7 +653,8 @@ private char[][] _node_info_collect(Node n, char[] d, char[] v)
 
 private char[] _node_info_format(char[] d_lbl, char[] d, char[] v_lbl, char[] v)
 {
-    return format("{\"%s\":%s,\"%s\":\"%s\"}", d_lbl, d, v_lbl, v);
+    char[] v2 = (v is NULL) ? format("\"%s\"", NULL) : v;
+    return format("{\"%s\":%s,\"%s\":\"%s\"}", d_lbl, d, v_lbl, v2);
 }
 
 unittest {

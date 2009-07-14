@@ -123,10 +123,16 @@ const char[] BAD_QUERY_E_DEL_GET_KEYS = "The given key(s) is invalid.";
 const char[] BAD_QUERY_E_SET_PAIRS = "The given key->value pair(s) is invalid.";
 
 /**
-    The E_CREATE_TREE_EXISTS message.
-    Given if a CREATE query has attempts to create a tree that already exists.
+    The E_TREE_DOES_NOT_EXIST message.
+    Given if a query attempts to load to a tree that does not exist.
 */
-const char[] E_CREATE_TREE_EXISTS = "A tree by that name already exists.";
+const char[] E_TREE_DOES_NOT_EXIST = "A tree by that name does not exist.";
+
+/**
+    The E_TREE_EXISTS message.
+    Given if a query attempts to create a tree that already exists.
+*/
+const char[] E_TREE_EXISTS = "A tree by that name already exists.";
 
 /**
     The failure message.

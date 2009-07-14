@@ -2,6 +2,7 @@ from hybridstore import HybridStore as HS
 import unittest
 from cjson import DecodeError, decode
 
+PORT = 41111
 
 def to_dict(a):
     # transform, e.g., [('key','value'),...] to {'key':'value'}
@@ -13,7 +14,7 @@ def to_dict(a):
 class HybridStoreTestBase(unittest.TestCase):
     def __init__(self,*args,**kwargs):
         super(HybridStoreTestBase,self).__init__(*args,**kwargs)
-        self._hs = HS()
+        self._hs = HS(port=PORT)
         self._all_data = [('tom','male'),('angie','female'),('marshall','male'),('debbie','female'),('orson','male'),('jenny','female')]
         self._basic_data = [('a','1'),('b','2'),('c','3'),('d','4'),('e','5')]
         self._numeric_data = [(1,1),(2,2),(3,3),(4,4),(5,5)]
@@ -97,6 +98,9 @@ class TestErrors(HybridStoreTestBase):
     def _invalid(self,name):
         return 'That is not a valid %s.' % name
 
+    def _invalid_tree(self):
+        return 'A tree by that name does not exist.'
+
     def testBadQuery(self):
         json = self._hs.send('DO SOMETHING INVALID;')
         self._json_error(json)
@@ -136,10 +140,15 @@ class TestErrors(HybridStoreTestBase):
         self._json_error(json)
         self.assertEqual(json.get('response'),self._invalid('tree'))
 
-    def testInvalidLoad(self):
+    def testInvalidLoadFile(self):
         json = self._hs.load('not_a_valid_file.rj','test')
         self._json_error(json)
         self.assertEqual(json.get('response'),self._invalid('file'))
+
+    def testInvalidLoadTree(self):
+        json = self._hs.load('tests/dictionary.rj','t')
+        self._json_error(json)
+        self.assertEqual(json.get('response'),self._invalid_tree())
 
 
 class TestInfo(HybridStoreTestBase):
