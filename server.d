@@ -41,15 +41,22 @@ import std.string;
 import std.thread;
 static import dlib.remote;
 
-RedBlackTree[char[]] trees;
-TcpSocket listener;
+/**
+    The associative array of red-black trees that we'll maintain.
+*/
+private RedBlackTree[char[]] _trees;
+
+/**
+    The socket that we will listen on.
+*/
+private TcpSocket _listener;
 
 /**
     Reads the recordjar file f and send each bit of information to the
     appropriate instance.
     Returns a RedBlackTree that will exist locally.
 */
-RedBlackTree buildRedBlackTrees(char[][] servers, char[] tree_name, char[] f, bool compress)
+RedBlackTree buildRedBlack_trees(char[][] servers, char[] tree_name, char[] f, bool compress)
 {
     // load the data
     AttrObj[] aobjs = gatherObjs(f, compress);
@@ -93,7 +100,7 @@ RedBlackTree buildRedBlackTrees(char[][] servers, char[] tree_name, char[] f, bo
 
 /*
  * Handlers
- * All handlers must return a JSON response.
+ * All handlers must send a JSON response.
  */
 
 /**
@@ -124,10 +131,10 @@ private int _handle_elect(char[] query, Socket a)
 
 /**
     The main loop for handling queries.
-    Returns an associative array of RedBlackTrees keyed by name.
-    Synchronization on trees should take place only in this function.
+    Returns an associative array of RedBlack_trees keyed by name.
+    Synchronization on _trees should take place only in this function.
 */
-private RedBlackTree[char[]] _response_handler(Socket a, char[] query, int kind, RedBlackTree[char[]] trees)
+private RedBlackTree[char[]] _response_handler(Socket a, char[] query, int kind, RedBlackTree[char[]] _trees)
 {
     // do the special cases
     switch (kind)
@@ -141,7 +148,7 @@ private RedBlackTree[char[]] _response_handler(Socket a, char[] query, int kind,
                 }
                 char[][] p = params(query,6);
                 char[] tree_name = p[1];
-                trees[tree_name] = new RedBlackTree();
+                _trees[tree_name] = new RedBlackTree();
                 a.send(dlib.remote.response_as_json(true));
                 dlib.remote.close_if_alive(a);
             }
@@ -157,8 +164,8 @@ private RedBlackTree[char[]] _response_handler(Socket a, char[] query, int kind,
                     if (std.file.exists(file_name))
                     {
                         char[] tree_name = p[0];
-                        RedBlackTree t = buildRedBlackTrees(SERVER_POOL, tree_name, file_name, kind == K.LOAD_C);
-                        trees[tree_name] = t;
+                        RedBlackTree t = buildRedBlack_trees(SERVER_POOL, tree_name, file_name, kind == K.LOAD_C);
+                        _trees[tree_name] = t;
                         a.send(dlib.remote.response_as_json(true));
                     } else {
                         a.send(dlib.remote.response_as_json(false,INVALID_FILE));
@@ -187,9 +194,9 @@ private RedBlackTree[char[]] _response_handler(Socket a, char[] query, int kind,
                 }
                 char[][] p = params(query,4);
                 char[] tree_name = p[1];
-                if (tree_name in trees)
+                if (tree_name in _trees)
                 {
-                    trees.remove(tree_name);
+                    _trees.remove(tree_name);
                     a.send(dlib.remote.response_as_json(true));
                 } else {
                     a.send(dlib.remote.response_as_json(false,INVALID_TREE));
@@ -223,8 +230,8 @@ private RedBlackTree[char[]] _response_handler(Socket a, char[] query, int kind,
             Observer ob = new Observer(a);
             NormalQueryResponder nqr = new NormalQueryResponder();
             nqr.connect(&ob.watch);
-            nqr.act(SERVER_POOL,query,kind,&trees);
-            // return _respond_to_normal_query(SERVER_POOL,query,kind,&trees);
+            nqr.act(SERVER_POOL,query,kind,&_trees);
+            // return _respond_to_normal_query(SERVER_POOL,query,kind,&_trees);
             break;
         // do the error queries
         case K.E_DEL_GET_KEYS:
@@ -238,7 +245,7 @@ private RedBlackTree[char[]] _response_handler(Socket a, char[] query, int kind,
         default:
             a.send(dlib.remote.response_as_json(false,UNRECOGNIZED));
     }
-    return trees;
+    return _trees;
 }
 
 /**
@@ -259,6 +266,10 @@ private void _sync_maintain_queries(char[] query)
     queries_thread.run();
 }
 
+/**
+    This is taken from http://splinter.com.au/blog/?p=15.
+    Without Chris Hulbert and that post, libev might never have been added.
+*/
 extern (C)
 {
     static void libev_cb(ev_loop_t *loop, ev_io *w, int revents)
@@ -267,9 +278,12 @@ extern (C)
     }
 }
 
+/**
+    This is modeled on http://splinter.com.au/blog/?p=15.
+*/
 void callback(ev_loop_t *loop, ev_io *w)
 {
-    Socket a = listener.accept();
+    Socket a = _listener.accept();
     char[] query = dlib.remote.collect_input(a);
     say(format("query: \"%s\"", query),VERBOSITY,5);
     if (is_query(query))
@@ -290,10 +304,10 @@ void callback(ev_loop_t *loop, ev_io *w)
             dlib.remote.close_if_alive(a);
             ev_io_stop(loop, w);
             ev_unloop(loop, EVUNLOOP_ONE);
-            listener.shutdown(SocketShutdown.BOTH);
-            listener.close();
+            _listener.shutdown(SocketShutdown.BOTH);
+            _listener.close();
         } else {
-            trees = _response_handler(a,query,kind,trees);
+            _trees = _response_handler(a,query,kind,_trees);
         }
     } else {
         a.send(dlib.remote.response_as_json(false,BAD_QUERY));
@@ -310,17 +324,17 @@ void main(char[][] args)
     say("Processing args...",VERBOSITY,9);
     char[][] args2;
     process_args(args);
-    // create the listener
-    listener = new TcpSocket();
-    listener.blocking(false);
-    listener.bind(new InternetAddress(HSPORT));
-    listener.listen(1);
+    // create the _listener
+    _listener = new TcpSocket();
+    _listener.blocking(false);
+    _listener.bind(new InternetAddress(HSPORT));
+    _listener.listen(1);
     say(format("Listening on port %s.", HSPORT),VERBOSITY,1);
     // Listen forever (until we decide to stop).
     // Start libev
     ev_loop_t* loop = ev_default_loop(0);
     ev_io io_watcher;
-    ev_io_init(&io_watcher, &libev_cb, listener.handle(), EV_READ);
+    ev_io_init(&io_watcher, &libev_cb, _listener.handle(), EV_READ);
     ev_io_start(loop, &io_watcher);
     ev_loop(loop, 0);
 }
