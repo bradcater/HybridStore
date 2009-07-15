@@ -1,7 +1,7 @@
 Source: hybridstore
 Section: web
 Priority: extra
-Maintainer: Brad Cater <bradcater@gmail.com>
+Maintainer: Bradley B Cater (Brad Cater) <bradcater@gmail.com>
 Build-Depends: debhelper (>= 7), docbook-to-man
 Essential: no
 Depends: gdc, libev3, libev-dev

@@ -126,7 +126,7 @@ const char[] BAD_QUERY_E_SET_PAIRS = "The given key->value pair(s) is invalid.";
 	The E_CONFIG_FILE_NOT_FOUND message.
 	Given if hybridstore is run with an invalid config_file directive.
 */
-const char[] E_CONFIG_FILE_NOT_FOUND = "Given config file cannot be read. Defaulting to standard config file."
+const char[] E_CONFIG_FILE_NOT_FOUND = "Given config file cannot be read. Defaulting to standard config file.";
 
 /**
     The E_TREE_DOES_NOT_EXIST message.

@@ -4,7 +4,7 @@
 HybridStore \- a high\-performance memory object caching system
 ."""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .SH SYNOPSIS
-.B hybridstored
+.B hybridstore
 [options]
 ."""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .SH DESCRIPTION
@@ -138,16 +138,16 @@ Higher values will be more verbose. Allowed values are on
 ."""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .SH EXAMPLES
 .TP
-.B \./hybridstored config_file=my_config.conf
+.B \./hybridstore config_file=my_config.conf
 Run HybridStore using the directives listed in my_config.conf.
 
 .TP
-.B \./hybridstored master=true server=localhost:41111
+.B \./hybridstore master=true server=localhost:41111
 Run HybridStore with this instance operating on port 41111 at localhost as the
 master.
 
 .TP
-.B \./hybridstored config_file=my_config.conf port=51111
+.B \./hybridstore config_file=my_config.conf port=51111
 Run HybridStore using the directives listed in my_config.conf, but listen on
 port 51111 regardless of which port is specified in my_config.conf.
 
