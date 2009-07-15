@@ -1,6 +1,7 @@
 from hybridstore import HybridStore as HS
-import unittest
+import string, unittest
 from cjson import DecodeError, decode
+from random import choice
 
 PORT = 41111
 
@@ -31,6 +32,15 @@ class HybridStoreTestBase(unittest.TestCase):
     def _json_ok(self,json):
         self.assertTrue(json)
         self.assertEqual(json.get('status'),'Ok.')
+
+    def _tree_size(self,tree):
+        json = self._hs.info(tree)
+        self.assertTrue(json)
+        tree_size = json['response'].get('localhost',{}).get('size','-1')
+        try: tree_size = int(tree_size)
+        except ValueError: tree_size = -1
+        self.assertTrue(tree_size >= 0)
+        return tree_size
 
     def setUp(self):
         self._hs.create('test')
@@ -190,6 +200,34 @@ class TestPersistence(HybridStoreTestBase):
         self._from_persistent()
 
 
+class TestRandomly(HybridStoreTestBase):
+    def _random_keys(self,size=99):
+        r = range(0,9999)
+        a = []
+        app = a.append
+        d = {}
+        for i in xrange(size):
+            v = choice(r)
+            if not d.has_key(v):
+                d[v] = True
+                app( (str(v) , choice(string.letters)) )
+        return a
+
+    def testGetAndDel(self):
+        k = self._random_keys()
+        self._hs.set(k,'test')
+        for p in k:
+            json = self._hs.get(p[0],'test')
+            self._json_ok(json)
+            self.assertEqual(json['response'].get(p[0]),p[1])
+        tree_size = self._tree_size('test')
+        for p in k:
+            json = self._hs.dell(p[0],'test')
+            ts = self._tree_size('test')
+            self.assertTrue(ts == tree_size - 1)
+            tree_size = ts
+
+
 class TestRange(HybridStoreTestBase):
     def _load_basic(self):
         self._hs.set(','.join([ "%s=%s" % (p[0],p[1]) for p in self._basic_data ]),'test')
@@ -200,6 +238,14 @@ class TestRange(HybridStoreTestBase):
         self._json_ok(json)
         self.assertTrue(isinstance(json.get('response'),dict))
         self.assertEqual(len(json['response'].keys()),2)
+        for l in json['response'].keys():
+            self.assertTrue(l in ['a','b','c','d','e'])
+        json = self._hs.get_r('a','c','test',limit=3)
+        self._json_ok(json)
+        self.assertTrue(isinstance(json.get('response'),dict))
+        self.assertEqual(len(json['response'].keys()),3)
+        for l in json['response'].keys():
+            self.assertTrue(l in ['a','b','c'])
 
     def testNoLimit(self):
         self._load_basic()

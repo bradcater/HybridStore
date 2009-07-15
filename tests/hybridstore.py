@@ -37,8 +37,17 @@ class HybridStore:
         if isinstance(keys,tuple):
             return u'%s=%s' % (self._transform_key(keys[0]),self._dumps(keys[1]))
         else:
+            # There exists a situation in which directly modifying keys in the
+            # causes the original list to be modified, causing unexpected bugs.
+            # Is there a better way to do this than to copy the whole list every
+            # single time?
+            a = []
+            app = a.append
+            for k in keys:
+                app(k)
+            keys = a
             for i in xrange(len(keys)):
-                k = self._transform_key(k)
+                k = self._transform_key(keys[i])
                 assert isinstance(k,tuple), u"key (%s) is the wrong type." % str(k)
                 if len(k) == 2:
                     k = u'%s=%s' % (k[0],self._dumps(k[1]))
