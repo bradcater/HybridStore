@@ -22,8 +22,8 @@ result of limiting database queries is better application performance.
 .B HybridStore
 is implemented such that each instance (possibly on the same
 machine) in a cluster maintains a red-black tree of objects allocated by key.
-Thus, in the case of instance failure, most of the cluster's objects remain
-intact.
+Thus, in the case of single-instance failure, most of the cluster's objects
+remain intact.
 .PP
 Designed with scalability in mind,
 .B HybridStore
