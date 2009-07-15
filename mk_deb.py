@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+# http://earruda.eti.br/blog/archives/10
+
 VERBOSE = True
 VERSION = 1.0
 
