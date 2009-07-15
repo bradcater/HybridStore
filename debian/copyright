@@ -1,0 +1,25 @@
+This package was debianized by Brad Cater <bradcater@gmail.com> on
+Wed, 15 Jul 2009 09:16:33 -0700.
+
+It was downloaded from <http://hybridstore.bradcater.webfactional.com>
+
+Upstream Author(s):
+
+    Brad Cater <bradcater@gmail.com>
+
+Copyright:
+
+    Copyright (C) 2009 Brad Cater
+
+License:
+
+    LGPL
+
+The Debian packaging is copyright 2009, Bradley B Cater <bradcater@gmail.com> and
+is licensed under the LGPL, see `/usr/share/common-licenses/LGPL'.
+
+# Please also look if there are files or directories which have a
+# different copyright/license attached and list them here.
+
+HybridStore uses a library by Leandro Lucarella, (C) 2008, released under the
+BOLA license. <http://auriga.wearlab.de/~alb/bola/>

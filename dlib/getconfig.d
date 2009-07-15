@@ -11,7 +11,14 @@ import std.string;
 char[][char[]] get_config(char[] configfile)
 {
     char[][char[]] config;
-    char[][] lines = read_file(configfile);
+    char[][] lines;
+	try
+	{
+		lines = read_file(configfile);
+	} catch (Exception e) {
+		say(E_CONFIG_FILE_NOT_FOUND,VERBOSITY,1);
+		lines = read_file("/etc/hybridstore.conf");
+	}
     char[][] spl;
     foreach (line; lines)
     {

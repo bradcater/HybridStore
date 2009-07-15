@@ -1,0 +1,28 @@
+Source: hybridstore
+Section: web
+Priority: extra
+Maintainer: Brad Cater <bradcater@gmail.com>
+Build-Depends: debhelper (>= 7), docbook-to-man
+Essential: no
+Depends: gdc, libev3, libev-dev
+Recommends: doxygen
+Provides: hybridstore
+Standards-Version: 3.8.0
+Homepage: http://hybridstore.bradcater.webfactional.com
+
+Package: hybridstore
+Architecture: i386
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: a high-performance memory object caching system
+    HybridStore is a fast, distributed, highly-scalable, fault-tolerant,
+    semi-persistent object caching system designed to increase application
+    performance by storing (in memory) objects that would otherwise require
+    significant time or resources to generate. Since applications are often
+    limited by database performance, the result of limiting database queries is
+    better application performance.
+    HybridStore is implemented such that each instance (possibly on the same
+    machine) in a cluster maintains a red-black tree of objects allocated by
+    key. Thus, in the case of single-instance failure, most of the cluster's
+    objects remain intact.
+    Designed with scalability in mind, HybridStore uses libev and non-blocking
+    I/O to support many simultaneous connections.
