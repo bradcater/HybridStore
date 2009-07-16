@@ -1,4 +1,4 @@
-import os, readline, socket, sys
+import os, readline, socket, sys, time
 
 if len(sys.argv) == 2:
     PORT = int(sys.argv[1])
@@ -13,9 +13,11 @@ while ok:
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(("localhost", PORT))
     print 'sending "%s"' % i
+    t1 = time.time()
     s.send(i)
     resp = s.recv(8192)
-    print 'received %s' % resp
+    t2 = time.time()
+    print 'received %s (%.3fms)' % (resp,t2-t1)
     s.close()
     if i == "EXIT;":
         ok = False

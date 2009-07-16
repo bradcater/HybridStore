@@ -511,14 +511,20 @@ class RedBlackTree
                 (rn !is null && rn.data !is null && rn.data <= node.data))
             {
                 say("Binary tree violation.",VERBOSITY,1);
-                this.print();
+                if (VERBOSITY >= 1)
+                {
+                    this.print();
+                }
                 return 0;
             }
             /* Black height mismatch */
             if (lh != 0 && rh != 0 && lh != rh)
             {
                 say(format("Black violation: lh=%s, rh=%s.", lh, rh),VERBOSITY,1);
-                this.print();
+                if (VERBOSITY >= 1)
+                {
+                    this.print();
+                }
                 return 0;
             }
             /* Only count black links */

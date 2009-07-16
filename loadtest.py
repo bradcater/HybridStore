@@ -6,6 +6,8 @@ try:
     psyco.full()
 except ImportError: pass
 
+socket.setdefaulttimeout(.1)
+
 if len(sys.argv) >= 2:
     PORT = int(sys.argv[1])
 else:
@@ -18,17 +20,19 @@ else:
     BOTTOM = 0
 
 def socket_send(msg,p):
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(("localhost", p))
-    s.sendall(msg)
-    resp = s.recv(8192)
-    s.close()
-    return resp
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect(("localhost", p))
+        s.sendall(msg)
+        resp = s.recv(8192)
+        s.close()
+        return resp
+    except: return ''
 
 TRIALS = 250000
 METHODS = ('hybridstore','memcached','tokyocabinet','mysql')
 METHOD = METHODS[0]
-b = 15
+b = 10
 
 start = time.time()
 
