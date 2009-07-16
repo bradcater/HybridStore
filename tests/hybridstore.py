@@ -132,7 +132,7 @@ class HybridStore:
         s = self._get_socket()
         if s:
             s.send(cmd)
-            resp = s.recv(512)
+            resp = s.recv(8192)
             s.close()
             #print u'response %s' % resp
             return self._eval_response(resp)
