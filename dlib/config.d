@@ -7,6 +7,10 @@ import std.string;
  * DISK
  */
 
+/**
+    The default configuration file.
+    If CONFIG_FILE is not found, the file /etc/hybridstore.conf will be used.
+*/
 char[] CONFIG_FILE = "hybridstore.conf";
 
 /*
