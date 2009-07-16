@@ -3,7 +3,7 @@ import string, unittest
 from cjson import DecodeError, decode
 from random import choice
 
-PORT = 41111
+PORT = 41112
 
 def to_dict(a):
     # transform, e.g., [('key','value'),...] to {'key':'value'}

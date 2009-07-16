@@ -328,7 +328,10 @@ private char[] _perform_local_op(RedBlackTree btree, int kind, char[] key, char[
     switch (kind)
     {
         case K.DEL:
-            (ikey is double.min) ? btree.remove(key) : btree.remove(ikey);
+            synchronized
+            {
+                (ikey is double.min) ? btree.remove(key) : btree.remove(ikey);
+            }
             break;
         case K.GET:
             Node n;
@@ -348,7 +351,10 @@ private char[] _perform_local_op(RedBlackTree btree, int kind, char[] key, char[
             resp = node_info_short(n,key,NULL);
             break;
         case K.SET:
-            (ikey is double.min) ? btree.add(key,value) : btree.add(ikey,value);
+            synchronized
+            {
+                (ikey is double.min) ? btree.add(key,value) : btree.add(ikey,value);
+            }
             break;
         default:
             say(INVALID_STATE,VERBOSITY,1);

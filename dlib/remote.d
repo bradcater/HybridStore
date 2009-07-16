@@ -33,12 +33,12 @@ string[][char[]] aggregate_keys(char[][] servers, char[][] keys)
 */
 char[] assemble_data(AttrObj[] aobjs)
 {
-    char[] data;
+    char[][] ao_strs;
     foreach (ao; aobjs)
     {
-        data = format("%s,%s", ao.joinAttrs("key","value","="), data);
+        ao_strs ~= [ao.joinAttrs("key","value","=")];
     }
-    return data[0..$-1];
+    return ao_strs.join(",");
 }
 
 /**
@@ -98,7 +98,7 @@ char[] collect_input(Socket s)
     {
         ext = cast(char[])buff[0..size_received];
         r ~= ext;
-        if ([ext[$-1]] == ";")
+        if (ext[$-1] == ';')
         {
             return r;
         }
@@ -151,14 +151,12 @@ Node[] nodes_from_response(char[] response)
 */
 char[] response_as_json(bool success, char[] response = null, bool wrap_response = true)
 {
-    char[] r = format("{\"status\":\"%s\"", ((success) ? OK : FAIL));
+    char[] r = format("\"status\":\"%s\"", ((success) ? OK : FAIL));
     if (response)
     {
-        r = (wrap_response) ? format("%s,\"response\":\"%s\"}", r, response) : format("%s,\"response\":%s}", r, response);
-    } else {
-        r = format("%s}", r);
+        r = (wrap_response) ? format("%s,\"response\":\"%s\"", r, response) : format("%s,\"response\":%s", r, response);
     }
-    return r;
+    return format("{%s}", r);
 }
 
 /**

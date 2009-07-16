@@ -1,5 +1,6 @@
 module dlib.core;
 
+import dlib.rbtree;
 import std.md5;
 import std.string;
 

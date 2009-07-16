@@ -4,22 +4,6 @@ import dlib.config;
 import dlib.core;
 import std.string;
 
-/*
- * PING;
- * CREATE TREE mytree;
- * LOAD mytree FROM myfile [COMPRESSED];
- * SET mykey=myvalue[,mykey2=myvalue2]* IN mytree;
- * GET mykey[,mykey2]* FROM mytree [RANGE mykeymax [LIMT mylimit]];
- * DEL mykey[,mykey2]* FROM mytree;
- * INFO FROM mytree;
- * ALL FROM mytree;
- * COMMIT mytree TO myfile [COMPRESSED];
- * DROP mytree;
- * SWAP SERVER oldserver newserver;
- * ELECT SERVER newmaster;
- * EXIT;
- */ 
-
 /**
     A list of recognized query types.
 */
@@ -43,7 +27,7 @@ enum K
     DROP,
     SWAP,
     ELECT,
-    // invalid queries
+    // error queries
     E_DEL_GET_KEYS,
     E_SET_PAIRS,
     OTHER
@@ -79,18 +63,20 @@ bool is_query(char[] query)
 */
 int query_kind(char[] query)
 {
-    if (is_set(query)) {
-        return K.SET;
-    } else if (is_get(query)) {
+    // GET queries
+    if (is_get(query)) {
         return K.GET;
     } else if (is_get_range(query)) {
         return K.GET_R;
     } else if (is_get_range_limit(query)) {
         return K.GET_R_L;
+    // SET queries
+    } else if (is_set(query)) {
+        return K.SET;
+    // DEL queries
     } else if (is_del(query)) {
         return K.DEL;
-    } else if (is_ping(query)) {
-        return K.PING;
+    // other queries
     } else if (is_create(query)) {
         return K.CREATE;
     } else if (is_load(query)) {
@@ -111,14 +97,18 @@ int query_kind(char[] query)
         return K.SWAP;
     } else if (is_elect(query)) {
         return K.ELECT;
-    } else if (is_exit(query)) {
-        return K.EXIT;
+    // E_ querries
     } else if (is_e_del_keys(query)) {
         return K.E_DEL_GET_KEYS;
     } else if (is_e_get_keys(query)) {
         return K.E_DEL_GET_KEYS;
     } else if (is_e_set_pairs(query)) {
         return K.E_SET_PAIRS;
+    // miscellaneous queries
+    } else if (is_ping(query)) {
+        return K.PING;
+    } else if (is_exit(query)) {
+        return K.EXIT;
     } else {
         return K.OTHER;
     }

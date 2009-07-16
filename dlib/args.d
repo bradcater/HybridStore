@@ -41,17 +41,28 @@ void process_args(char[][] args)
     for (int i=1; i<args.length; i++)
     {
         spl = split(args[i],"=");
-        arg = spl[0];
-        val = spl[1];
-        cl_args[arg] = val;
+        if (spl.length == 2)
+        {
+            arg = spl[0];
+            val = spl[1];
+            cl_args[arg] = val;
+        } else {
+            say(format("Incorrectly formatted configuration directive \"%s\".", args[i]),VERBOSITY,1);
+        }
     }
     bool force_config_file = array_contains(cl_args.keys,"config_file");
     // get configuration directives from file but use command-line vals if given
     char[][char[]] config = force_config_file ? get_config(cl_args["config_file"]) : get_config(CONFIG_FILE);
+    // This handles the case of a config file that is missing a directive
+    // present in cl_args (instead of using the default).
+    foreach (ca; cl_args.keys)
+    {
+        config[ca] = cl_args[ca];
+    }
     bool use_cl;
     foreach (c; config.keys)
     {
-        use_cl = (array_contains(cl_args.keys,c) && !force_config_file);
+        use_cl = array_contains(cl_args.keys,c);
         val = (use_cl) ? cl_args[c] : config[c];
         switch (c)
         {
@@ -60,6 +71,10 @@ void process_args(char[][] args)
                 break;
             case "compression_level":
                 COMPRESSION_LEVEL = set_numeric_range(val,"compression_level",COMPRESSION_LEVEL);
+                break;
+            case "config_file":
+                // We need not do anything here, but we don't want to print the
+                // message about this being a bad directive.
                 break;
             case "master":
                 MASTER = _arg_true_false(c,val,MASTER);

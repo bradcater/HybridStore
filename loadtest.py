@@ -28,7 +28,7 @@ def socket_send(msg,p):
 TRIALS = 250000
 METHODS = ('hybridstore','memcached','tokyocabinet','mysql')
 METHOD = METHODS[0]
-b = 20
+b = 15
 
 start = time.time()
 
@@ -40,10 +40,10 @@ if METHOD == 'hybridstore':
     #h.create('test')
     for i in xrange(BOTTOM,BOTTOM + TRIALS,b):
         #h.set(",".join([ "%d=%d" % (j,j) for j in xrange(i,i+b) ]),'test')
-        msg = "SET %s IN test;" % ",".join([ "%d=%d" % (j,j) for j in xrange(i,i+b) ])
+        #msg = "SET %s IN test;" % ",".join([ "%d=%d" % (j,j) for j in xrange(i,i+b) ])
         # TODO: h.get() seems to fail after the response gets too big.
         #h.get(",".join([ "%d" % j for j in xrange(i,i+b) ]),'test')
-        #msg = "GET %s FROM test;" % ",".join([ "%d" % j for j in xrange(i,i+b) ])
+        msg = "GET %s FROM test;" % ",".join([ "%d" % j for j in xrange(i,i+b) ])
         #msg = "GET %d FROM test RANGE %d;" % (i,i+b)
         socket_send(msg,PORT)
     #socket_send("DROP TREE test;",PORT)
