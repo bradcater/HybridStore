@@ -6,11 +6,16 @@ try:
     psyco.full()
 except ImportError: pass
 
-if len(sys.argv) == 2:
+if len(sys.argv) >= 2:
     PORT = int(sys.argv[1])
 else:
     # int PORT = 41111;
     PORT = int(os.popen('grep PORT\ =\  dlib/config.d').read().split('=')[-1][1:-2])
+
+if len(sys.argv) == 3:
+    BOTTOM = int(sys.argv[2])
+else:
+    BOTTOM = 0
 
 def socket_send(msg,p):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -20,7 +25,6 @@ def socket_send(msg,p):
     s.close()
     return resp
 
-BOTTOM = 0#250000#500000,750000
 TRIALS = 250000
 METHODS = ('hybridstore','memcached','tokyocabinet','mysql')
 METHOD = METHODS[0]
